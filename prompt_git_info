@@ -1,0 +1,4 @@
+if [ -n "$__CURRENT_GIT_BRANCH" ]; then
+	s="$__CURRENT_GIT_BRANCH"
+	printf " %s%s" "%{${fg[red]}%}" "$s"
+fi

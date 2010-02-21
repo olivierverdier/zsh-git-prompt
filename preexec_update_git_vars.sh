@@ -3,3 +3,4 @@ case "$1" in
 	__EXECUTED_GIT_COMMAND=1
 	;;
 esac
+
