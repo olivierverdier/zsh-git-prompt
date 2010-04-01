@@ -8,8 +8,8 @@ lines = output.splitlines()
 
 import re
 behead_re = re.compile(r"^# Your branch is (ahead of|behind) '(.*)' by (\d+) commit")
-diverge_re = re.compile(r"^# Your branch and '.*' have diverged")
-symbols = {'ahead of': '↑', 'diverged': '↕', 'behind': '↓'}
+diverge_re = re.compile(r"^# and have (\d) and (\d) different")
+symbols = {'ahead of': '↑', 'behind': '↓'}
 
 bline = lines[0]
 if bline.find('Not currently on any branch') != -1:
@@ -25,7 +25,9 @@ else:
 		branch += match.groups()[2]
 	elif bstatusline.find('nothing to commit (working directory clean)') != -1:
 		branch += '⚡'
-	elif diverge_re.match(bstatusline):
-		branch += symbols['diverged']
+	else:
+		div_match = diverge_re.match(lines[2])
+	 	if div_match:
+			branch += "|{1}↕{0}".format(*div_match.groups())
 print '(%s)' % branch
 
