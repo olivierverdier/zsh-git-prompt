@@ -8,7 +8,7 @@ lines = output.splitlines()
 
 import re
 behead_re = re.compile(r"^# Your branch is (ahead of|behind) '(.*)' by (\d+) commit")
-diverge_re = re.compile(r"^# and have (\d) and (\d) different")
+diverge_re = re.compile(r"^# and have (\d+) and (\d+) different")
 symbols = {'ahead of': '↑', 'behind': '↓'}
 
 bline = lines[0]
