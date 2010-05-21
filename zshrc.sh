@@ -20,4 +20,6 @@ precmd_functions+='precmd_update_git_vars'
 chpwd_functions+='chpwd_update_git_vars'
  
 # Set the prompt.
-PROMPT=$'%{${fg[cyan]}%}%B%~%b$(prompt_git_info)%{${fg[default]}%} '
+PROMPT='%B%m%~%b$(prompt_git_info) %# '
+# for a right prompt:
+# RPROMPT='%b$(prompt_git_info)'
