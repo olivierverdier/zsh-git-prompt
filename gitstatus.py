@@ -11,6 +11,17 @@ behead_re = re.compile(r"^# Your branch is (ahead of|behind) '(.*)' by (\d+) com
 diverge_re = re.compile(r"^# and have (\d+) and (\d+) different")
 symbols = {'ahead of': '↑', 'behind': '↓'}
 
+status = ''
+staged = re.compile(r'^# Changes to be committed:$', re.MULTILINE)
+changed = re.compile(r'^# Changed but not updated:$', re.MULTILINE)
+untracked = re.compile(r'^# Untracked files:$', re.MULTILINE)
+if staged.search(output):
+	status += '♦'
+if changed.search(output):
+	status += '∘'
+if untracked.search(output):
+	status += '.'
+
 bline = lines[0]
 if bline.find('Not currently on any branch') != -1:
 	branch = Popen(['git','rev-parse','--short','HEAD'], stdout=PIPE).communicate()[0][:-1]
@@ -29,5 +40,5 @@ else:
 		div_match = diverge_re.match(lines[2])
 	 	if div_match:
 			branch += "|{1}↕{0}".format(*div_match.groups())
-print '(%s)' % branch
+print '(%s%s)' % (branch,status)
 
