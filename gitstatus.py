@@ -27,7 +27,7 @@ if untracked.search(output):
 
 bline = lines[0]
 if bline.find('Not currently on any branch') != -1:
-	branch = Popen(['git','rev-parse','--short','HEAD'], stdout=PIPE).communicate()[0][:-1]
+	branch = ':'+ Popen(['git','rev-parse','--short','HEAD'], stdout=PIPE).communicate()[0][:-1]
 else:
 	branch = bline.split(' ')[3]
 	bstatusline = lines[1]

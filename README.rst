@@ -1,32 +1,27 @@
 Informative git prompt for zsh
 ==============================
 
-About
------
-
-A zsh prompt that displays information about the current git repository.
-In particular:
-
-* branch name if any
-* commit sha1 if not on any branch
-* number of commit difference from the reference remote branch
+A ``zsh`` prompt that displays information about the current git repository.
+In particular the branch name, difference with remote branch, number of files staged, changed, etc.
 
 (an original idea from this `blog entry`_).
 
-Repository clean:
+Examples
+--------
 
-.. image:: http://files.droplr.com/files/35740123/UDMT.Picture%2014.png
-	:alt: Repository clean
+The prompt may look like the following: 
 
-Branch ahead of master by one commit:
+* ``(master↑3∘1)``: on branch ``master``, ahead of remote by 3 commits, 1 file changed but not tracked
+* ``(status♦2)``: on branch ``status``, 2 files staged
+* ``(master∘7.)``: on branch ``master``, 7 files changed, some files untracked
+* ``(experimental|2↕3)``: on branch ``experimental``; your branch has diverged by 3 commits, remote by 2 commits
+* ``(:70c2952)``: not on any branch; parent commit has sha1 ``70c2952``
 
-.. image:: http://files.droplr.com/files/35740123/UDQ5U.Picture15.png
-	:alt: Branch ahead
+Here is how it could look like for 2 staged files, one changed but unstaged file, and some untracked files, on branch ``master``:
 
-Not currently on any branch:
+.. image:: http://files.droplr.com/files/35740123/14053F.Picture%2022.png
+	:alt: Example
 
-.. image:: http://files.droplr.com/files/35740123/UDTg3.Picture16.png
-	:alt: Not currently on any branch
 
 .. _blog entry: http://sebastiancelis.com/2009/nov/16/zsh-prompt-git-users/
 
@@ -35,13 +30,17 @@ Symbols
 
 The symbols are as follows:
 
-:⚡: repository clean
-:↑n: ahead of remote by ``n`` commits
-:↓n: behind remote by ``n`` commits
-:|m↕n: branches diverged, other by ``m`` commits, yours by ``n`` commits
-:♦n: there are ``n`` staged files
-:∘n: there are ``n`` changed but *unstaged* files
-:.: some untracked files
+* Status Symbols
+	:⚡: repository clean
+	:↑n: ahead of remote by ``n`` commits
+	:↓n: behind remote by ``n`` commits
+	:\|m↕n: branches diverged, other by ``m`` commits, yours by ``n`` commits
+	:♦n: there are ``n`` staged files
+	:∘n: there are ``n`` changed but *unstaged* files
+	:.: some untracked files
+
+* Branch Symbols
+	:\:: when the branch name starts with a colon ``:``, it means it's actually a sha1, not a branch (although it should be pretty clear, unless you name your branches like sha1 :-)
 
 Install
 -------
