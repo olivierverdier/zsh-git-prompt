@@ -15,10 +15,13 @@ status = ''
 staged = re.compile(r'^# Changes to be committed:$', re.MULTILINE)
 changed = re.compile(r'^# Changed but not updated:$', re.MULTILINE)
 untracked = re.compile(r'^# Untracked files:$', re.MULTILINE)
+
 if staged.search(output):
-	status += '♦'
+	nb = len(Popen(['git','diff','--staged','--numstat'], stdout=PIPE).communicate()[0].splitlines())
+	status += '♦%d' % nb
 if changed.search(output):
-	status += '∘'
+	nb = len(Popen(['git','diff','--numstat'], stdout=PIPE).communicate()[0].splitlines())
+	status += '∘%d' % nb
 if untracked.search(output):
 	status += '.'
 
@@ -27,8 +30,6 @@ if bline.find('Not currently on any branch') != -1:
 	branch = Popen(['git','rev-parse','--short','HEAD'], stdout=PIPE).communicate()[0][:-1]
 else:
 	branch = bline.split(' ')[3]
-## 	if branch == 'master':
-## 		branch = '♦'
 	bstatusline = lines[1]
 	match = behead_re.match(bstatusline)
 	if match:

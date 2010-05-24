@@ -39,8 +39,8 @@ The symbols are as follows:
 :↑n: ahead of remote by ``n`` commits
 :↓n: behind remote by ``n`` commits
 :|m↕n: branches diverged, other by ``m`` commits, yours by ``n`` commits
-:♦: something is staged
-:∘: something is changed
+:♦n: there are ``n`` staged files
+:∘n: there are ``n`` changed but *unstaged* files
 :.: some untracked files
 
 Install
