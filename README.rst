@@ -30,6 +30,19 @@ Not currently on any branch:
 
 .. _blog entry: http://sebastiancelis.com/2009/nov/16/zsh-prompt-git-users/
 
+Symbols
+-------
+
+The symbols are as follows:
+
+:⚡: repository clean
+:↑n: ahead of remote by ``n`` commits
+:↓n: behind remote by ``n`` commits
+:|m↕n: branches diverged, other by ``m`` commits, yours by ``n`` commits
+:♦: something is staged
+:∘: something is changed
+:.: some untracked files
+
 Install
 -------
 
