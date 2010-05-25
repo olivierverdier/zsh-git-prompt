@@ -32,14 +32,14 @@ The symbols are as follows:
 
 * Status Symbols
 	:⚡: repository clean
-	:↑n: ahead of remote by ``n`` commits
-	:↓n: behind remote by ``n`` commits
-	:\|m↕n: branches diverged, other by ``m`` commits, yours by ``n`` commits
 	:♦n: there are ``n`` staged files
 	:∘n: there are ``n`` changed but *unstaged* files
 	:.: there are some untracked files
 
 * Branch Symbols
+	:↑n: ahead of remote by ``n`` commits
+	:↓n: behind remote by ``n`` commits
+	:\|m↕n: branches diverged, other by ``m`` commits, yours by ``n`` commits
 	:\:: when the branch name starts with a colon ``:``, it means it's actually a sha1, not a branch (although it should be pretty clear, unless you name your branches like sha1 :-)
 
 Install
