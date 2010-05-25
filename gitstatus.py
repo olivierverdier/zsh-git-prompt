@@ -40,6 +40,6 @@ else:
 	elif lines[2:]:
 		div_match = diverge_re.match(lines[2])
 	 	if div_match:
-			branch += "|{1}↕{0}".format(*div_match.groups())
+			branch += "↓{1}↑{0}".format(*div_match.groups())
 print '(%s%s)' % (branch,status)
 
