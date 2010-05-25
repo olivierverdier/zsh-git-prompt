@@ -11,7 +11,7 @@ Examples
 
 The prompt may look like the following: 
 
-* ``(master↑3∘1)``: on branch ``master``, ahead of remote by 3 commits, 1 file changed but not tracked
+* ``(master↑3∘1)``: on branch ``master``, ahead of remote by 3 commits, 1 file changed but not staged
 * ``(status♦2)``: on branch ``status``, 2 files staged
 * ``(master∘7.)``: on branch ``master``, 7 files changed, some files untracked
 * ``(experimental|2↕3)``: on branch ``experimental``; your branch has diverged by 3 commits, remote by 2 commits
@@ -37,7 +37,7 @@ The symbols are as follows:
 	:\|m↕n: branches diverged, other by ``m`` commits, yours by ``n`` commits
 	:♦n: there are ``n`` staged files
 	:∘n: there are ``n`` changed but *unstaged* files
-	:.: some untracked files
+	:.: there are some untracked files
 
 * Branch Symbols
 	:\:: when the branch name starts with a colon ``:``, it means it's actually a sha1, not a branch (although it should be pretty clear, unless you name your branches like sha1 :-)
