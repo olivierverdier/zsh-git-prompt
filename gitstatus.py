@@ -24,6 +24,8 @@ if changed.search(output):
 	status += '∘%d' % nb
 if untracked.search(output):
 	status += '.'
+if status == '':
+	status = '⚡'
 
 bline = lines[0]
 if bline.find('Not currently on any branch') != -1:
@@ -35,9 +37,7 @@ else:
 	if match:
 		branch += symbols[match.groups()[0]]
 		branch += match.groups()[2]
-	elif bstatusline.find('nothing to commit (working directory clean)') != -1:
-		branch += '⚡'
-	else:
+	elif lines[2:]:
 		div_match = diverge_re.match(lines[2])
 	 	if div_match:
 			branch += "|{1}↕{0}".format(*div_match.groups())
