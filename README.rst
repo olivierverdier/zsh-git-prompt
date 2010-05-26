@@ -14,7 +14,7 @@ The prompt may look like the following:
 * ``(master↑3∘1)``: on branch ``master``, ahead of remote by 3 commits, 1 file changed but not staged
 * ``(status♦2)``: on branch ``status``, 2 files staged
 * ``(master∘7.)``: on branch ``master``, 7 files changed, some files untracked
-* ``(experimental|2↕3)``: on branch ``experimental``; your branch has diverged by 3 commits, remote by 2 commits
+* ``(experimental↓2↑3)``: on branch ``experimental``; your branch has diverged by 3 commits, remote by 2 commits
 * ``(:70c2952)``: not on any branch; parent commit has sha1 ``70c2952``
 
 Here is how it could look like for 2 staged files, one changed but unstaged file, and some untracked files, on branch ``master``:
