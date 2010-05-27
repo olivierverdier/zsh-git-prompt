@@ -17,7 +17,7 @@ The prompt may look like the following:
 * ``(experimental↓2↑3)``: on branch ``experimental``; your branch has diverged by 3 commits, remote by 2 commits
 * ``(:70c2952)``: not on any branch; parent commit has sha1 ``70c2952``
 
-Here is how it could look like when you are ahead by 2 commits, and have 3 staged files, 1 changed but unstaged file, and some untracked files, on branch ``master``:
+Here is how it could look like when you are ahead by 2 commits, and have 3 staged files, 1 changed but unstaged file, and some untracked files, on branch ``dev``:
 
 .. image:: http://files.droplr.com.s3.amazonaws.com/files/35740123/14GMbk.Picture%2023.png
 	:alt: Example
