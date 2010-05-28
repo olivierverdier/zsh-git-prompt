@@ -58,6 +58,7 @@ Install
 			prompt_git_info
 			update_current_git_vars.sh
 
+#. Adapt the format of the git information inside the ``prompt_git_info`` file to your needs.
 #. Go in a git repository and test it!
 
 **Enjoy!**

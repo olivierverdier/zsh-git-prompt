@@ -6,7 +6,11 @@ symbols = {'ahead of': '↑', 'behind': '↓', 'staged':'♦', 'changed':'‣', 
 
 from subprocess import Popen, PIPE
 
-output = Popen(['git','status'], stdout=PIPE).communicate()[0]
+output,error = Popen(['git','status'], stdout=PIPE, stderr=PIPE).communicate()
+
+if error:
+	import sys
+	sys.exit(0)
 lines = output.splitlines()
 
 import re
@@ -48,5 +52,5 @@ else:
 	 	if div_match:
 			remote = "{behind}{1}{ahead of}{0}".format(*div_match.groups(), **symbols)
 
-print '(%s%s%s)' % (branch,remote,status)
+print '%s:%s:%s' % (branch,remote,status)
 
