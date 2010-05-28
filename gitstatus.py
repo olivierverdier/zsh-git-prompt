@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: UTF-8 -*-
 
+# change those symbols to whatever you prefer
+symbols = {'ahead of': '↑', 'behind': '↓', 'staged':'♦', 'changed':'‣', 'untracked':'…', 'clean':'⚡', 'sha1':':'}
+
 from subprocess import Popen, PIPE
 
 output = Popen(['git','status'], stdout=PIPE).communicate()[0]
@@ -9,7 +12,6 @@ lines = output.splitlines()
 import re
 behead_re = re.compile(r"^# Your branch is (ahead of|behind) '(.*)' by (\d+) commit")
 diverge_re = re.compile(r"^# and have (\d+) and (\d+) different")
-symbols = {'ahead of': '↑', 'behind': '↓', 'staged':'♦', 'changed':'‣', 'untracked':'…', 'clean':'⚡', 'sha1':':'}
 
 status = ''
 staged = re.compile(r'^# Changes to be committed:$', re.MULTILINE)
