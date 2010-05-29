@@ -23,10 +23,10 @@ changed = re.compile(r'^# Changed but not updated:$', re.MULTILINE)
 untracked = re.compile(r'^# Untracked files:$', re.MULTILINE)
 
 if staged.search(output):
-	nb = len(Popen(['git','diff','--staged','--name-only'], stdout=PIPE).communicate()[0].splitlines())
+	nb = len(Popen(['git','diff','--staged','--name-only','--diff-filter=M'], stdout=PIPE).communicate()[0].splitlines())
 	status += '%s%d' % (symbols['staged'], nb)
 if changed.search(output):
-	nb = len(Popen(['git','ls-files','-m'], stdout=PIPE).communicate()[0].splitlines())
+	nb = len(Popen(['git','diff','--name-only', '--diff-filter=M'], stdout=PIPE).communicate()[0].splitlines())
 	status += '%s%d' % (symbols['changed'], nb)
 if untracked.search(output):
 ## 		nb = len(Popen(['git','ls-files','--others','--exclude-standard'],stdout=PIPE).communicate()[0].splitlines())
