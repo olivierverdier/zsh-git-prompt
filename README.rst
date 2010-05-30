@@ -33,6 +33,7 @@ The symbols are as follows:
 * Status Symbols
 	:⚡: repository clean
 	:♦n: there are ``n`` staged files
+	:♠n: there are ``n`` unmerged files
 	:‣n: there are ``n`` changed but *unstaged* files
 	:…: there are some untracked files
 

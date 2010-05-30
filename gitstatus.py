@@ -2,7 +2,7 @@
 # -*- coding: UTF-8 -*-
 
 # change those symbols to whatever you prefer
-symbols = {'ahead of': '↑', 'behind': '↓', 'staged':'♦', 'changed':'‣', 'untracked':'…', 'clean':'⚡', 'sha1':':'}
+symbols = {'ahead of': '↑', 'behind': '↓', 'staged':'♦', 'changed':'‣', 'untracked':'…', 'clean':'⚡', 'unmerged':'♠', 'sha1':':'}
 
 from subprocess import Popen, PIPE
 
@@ -21,10 +21,14 @@ status = ''
 staged = re.compile(r'^# Changes to be committed:$', re.MULTILINE)
 changed = re.compile(r'^# Changed but not updated:$', re.MULTILINE)
 untracked = re.compile(r'^# Untracked files:$', re.MULTILINE)
+unmerged = re.compile(r'^# Unmerged paths:$', re.MULTILINE)
 
 if staged.search(output):
 	nb = len(Popen(['git','diff','--staged','--name-only','--diff-filter=M'], stdout=PIPE).communicate()[0].splitlines())
 	status += '%s%d' % (symbols['staged'], nb)
+if unmerged.search(output):
+	nb = len(Popen(['git','diff', '--staged','--name-only', '--diff-filter=U'], stdout=PIPE).communicate()[0].splitlines())
+	status += '%s%d' % (symbols['unmerged'], nb)
 if changed.search(output):
 	nb = len(Popen(['git','diff','--name-only', '--diff-filter=M'], stdout=PIPE).communicate()[0].splitlines())
 	status += '%s%d' % (symbols['changed'], nb)
