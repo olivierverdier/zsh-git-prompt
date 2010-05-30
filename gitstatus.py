@@ -52,5 +52,5 @@ else:
 	 	if div_match:
 			remote = "{behind}{1}{ahead of}{0}".format(*div_match.groups(), **symbols)
 
-print '%s:%s:%s' % (branch,remote,status)
+print '\n'.join([branch,remote,status])
 
