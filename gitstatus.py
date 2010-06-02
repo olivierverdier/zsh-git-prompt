@@ -24,13 +24,13 @@ untracked = re.compile(r'^# Untracked files:$', re.MULTILINE)
 unmerged = re.compile(r'^# Unmerged paths:$', re.MULTILINE)
 
 if staged.search(output):
-	nb = len(Popen(['git','diff','--staged','--name-only','--diff-filter=M'], stdout=PIPE).communicate()[0].splitlines())
+	nb = len(Popen(['git','diff','--staged','--name-only','--diff-filter=ACDMRT'], stdout=PIPE).communicate()[0].splitlines())
 	status += '%s%d' % (symbols['staged'], nb)
 if unmerged.search(output):
 	nb = len(Popen(['git','diff', '--staged','--name-only', '--diff-filter=U'], stdout=PIPE).communicate()[0].splitlines())
 	status += '%s%d' % (symbols['unmerged'], nb)
 if changed.search(output):
-	nb = len(Popen(['git','diff','--name-only', '--diff-filter=M'], stdout=PIPE).communicate()[0].splitlines())
+	nb = len(Popen(['git','diff','--name-only', '--diff-filter=ACDMRT'], stdout=PIPE).communicate()[0].splitlines())
 	status += '%s%d' % (symbols['changed'], nb)
 if untracked.search(output):
 ## 		nb = len(Popen(['git','ls-files','--others','--exclude-standard'],stdout=PIPE).communicate()[0].splitlines())
