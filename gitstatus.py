@@ -44,8 +44,10 @@ branch = Popen(['git', 'symbolic-ref', 'HEAD'], stdout=PIPE).communicate()[0][11
 if not branch: # not on any branch
 	branch = symbols['sha1']+ Popen(['git','rev-parse','--short','HEAD'], stdout=PIPE).communicate()[0][:-1]
 else:
-	remote_branch = Popen(['git', 'branch', '-r'], stdout=PIPE).communicate()[0].splitlines()[-1][2:]
-## 	remote_branch = 'master'
+	if branch == 'master':
+		remote_branch = Popen(['git', 'branch', '-r'], stdout=PIPE).communicate()[0].splitlines()[-1][2:]
+	else:
+		remote_branch = 'master'
 	behind = len(Popen(['git', 'rev-list', 'HEAD..%s' % remote_branch],stdout=PIPE).communicate()[0].splitlines())
 	ahead = len(Popen(['git', 'rev-list', '%s..HEAD' % remote_branch],stdout=PIPE).communicate()[0].splitlines())
 	if behind:
