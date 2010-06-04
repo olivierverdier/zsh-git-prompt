@@ -44,16 +44,20 @@ remote = ''
 if not branch: # not on any branch
 	branch = symbols['sha1']+ Popen(['git','rev-parse','--short','HEAD'], stdout=PIPE).communicate()[0][:-1]
 else:
-	if branch == 'master':
-		remote_branch = Popen(['git', 'branch', '-r'], stdout=PIPE).communicate()[0].splitlines()[-1][2:]
-	else:
-		remote_branch = 'master'
-	behind = len(Popen(['git', 'rev-list', 'HEAD..%s' % remote_branch],stdout=PIPE).communicate()[0].splitlines())
-	ahead = len(Popen(['git', 'rev-list', '%s..HEAD' % remote_branch],stdout=PIPE).communicate()[0].splitlines())
-	if behind:
-		remote += '%s%s' % (symbols['behind'], behind)
-	if ahead:
-		remote += '%s%s' % (symbols['ahead of'], ahead)
+	remote_name = Popen(['git','config','branch.%s.remote' % branch], stdout=PIPE).communicate()[0].strip()
+	if remote_name:
+		merge_name = Popen(['git','config','branch.%s.merge' % branch], stdout=PIPE).communicate()[0].strip()
+		if remote_name == '.': # local
+			remote_ref = merge_name
+		else:
+			remote_ref = 'refs/remotes/%s/%s' % (remote_name, merge_name[11:])
+		behead = Popen(['git', 'rev-list', '--left-right', '%s...HEAD' % remote_ref],stdout=PIPE).communicate()[0].splitlines()
+		ahead = len([x for x in behead if x[0]=='>'])
+		behind = len(behead) - ahead
+		if behind:
+			remote += '%s%s' % (symbols['behind'], behind)
+		if ahead:
+			remote += '%s%s' % (symbols['ahead of'], ahead)
 	
 print '\n'.join([branch,remote,status])
 
