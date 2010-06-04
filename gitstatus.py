@@ -34,7 +34,6 @@ nb = execute(['git','diff','--name-only', '--diff-filter=ACDMRT'])
 if nb:
 	status += '%s%s' % (symbols['changed'], nb)
 nb = len(Popen(['git','ls-files','--others','--exclude-standard'],stdout=PIPE).communicate()[0].splitlines())
-## 		status += "%s" % (symbols['untracked']*(nb//3 + 1), )
 if nb:
 	status += symbols['untracked']
 if status == '':
