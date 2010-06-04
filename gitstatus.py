@@ -6,11 +6,13 @@ symbols = {'ahead of': '↑', 'behind': '↓', 'staged':'♦', 'changed':'‣', 
 
 from subprocess import Popen, PIPE
 
-output,error = Popen(['git','status'], stdout=PIPE, stderr=PIPE).communicate()
+branch,error = Popen(['git', 'symbolic-ref', 'HEAD'], stdout=PIPE, stderr=PIPE).communicate()
 
 if error:
 	import sys
 	sys.exit(0)
+
+branch = branch[11:-1]
 
 status = ''
 
@@ -40,7 +42,6 @@ if status == '':
 
 remote = ''
 
-branch = Popen(['git', 'symbolic-ref', 'HEAD'], stdout=PIPE).communicate()[0][11:-1]
 if not branch: # not on any branch
 	branch = symbols['sha1']+ Popen(['git','rev-parse','--short','HEAD'], stdout=PIPE).communicate()[0][:-1]
 else:
