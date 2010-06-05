@@ -16,23 +16,17 @@ branch = branch[11:-1]
 
 status = ''
 
-def execute(*command):
-	out, err = Popen(*command, stdout=PIPE, stderr=PIPE).communicate()
-	if not err:
-		nb = len(out.splitlines())
-	else:
-		nb = '?'
-	return nb
-
-nb = execute(['git','diff','--staged','--name-only','--diff-filter=ACDMRT'])
-if nb:
-	status += '%s%s' % (symbols['staged'], nb)
-nb = execute(['git','diff', '--staged','--name-only', '--diff-filter=U'])
-if nb:
-	status += '%s%s' % (symbols['unmerged'], nb)
-nb = execute(['git','diff','--name-only', '--diff-filter=ACDMRT'])
-if nb:
-	status += '%s%s' % (symbols['changed'], nb)
+changed = [namestat[0] for namestat in Popen(['git','diff','--name-status'], stdout=PIPE).communicate()[0].splitlines()]
+staged = [namestat[0] for namestat in Popen(['git','diff', '--staged','--name-status'], stdout=PIPE).communicate()[0].splitlines()]
+nb_changed = len(changed) - changed.count('U')
+nb_U = staged.count('U')
+nb_staged = len(staged) - nb_U
+if nb_staged:
+	status += '%s%s' % (symbols['staged'], nb_staged)
+if nb_U:
+	status += '%s%s' % (symbols['unmerged'], nb_U)
+if nb_changed:
+	status += '%s%s' % (symbols['changed'], nb_changed)
 nb = len(Popen(['git','ls-files','--others','--exclude-standard'],stdout=PIPE).communicate()[0].splitlines())
 if nb:
 	status += symbols['untracked']
