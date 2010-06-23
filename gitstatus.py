@@ -45,7 +45,10 @@ else:
 			remote_ref = merge_name
 		else:
 			remote_ref = 'refs/remotes/%s/%s' % (remote_name, merge_name[11:])
-		behead = Popen(['git', 'rev-list', '--left-right', '%s...HEAD' % remote_ref],stdout=PIPE).communicate()[0].splitlines()
+		revlist,err = Popen(['git', 'rev-list', '--left-right', '%s...HEAD' % remote_ref],stdout=PIPE,stderr=PIPE).communicate()
+		if err.find('fatal:') != -1: # fallback to local
+			revlist,err = Popen(['git', 'rev-list', '--left-right', '%s...HEAD' % merge_name],stdout=PIPE,stderr=PIPE).communicate()
+		behead = revlist.splitlines()
 		ahead = len([x for x in behead if x[0]=='>'])
 		behind = len(behead) - ahead
 		if behind:
