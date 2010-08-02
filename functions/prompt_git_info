@@ -1,3 +1,0 @@
-if [ -n "$__CURRENT_GIT_STATUS" ]; then
-	echo "(%{${fg[red]}%}$__CURRENT_GIT_STATUS[1]%{${fg[default]}%}$__CURRENT_GIT_STATUS[2]%{${fg[magenta]}%}$__CURRENT_GIT_STATUS[3]%{${fg[default]}%})"
-fi
