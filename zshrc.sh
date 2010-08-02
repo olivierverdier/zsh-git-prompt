@@ -14,15 +14,15 @@ fpath=($__GIT_PROMPT_DIR/functions $fpath)
 autoload -U $__GIT_PROMPT_DIR/functions/*(:t)
 
 function preexec() {
-    preexec_update_git_vars
+    preexec_update_git_vars $@
 }
 
 function precmd() {
-    precmd_update_git_vars
+    precmd_update_git_vars $@
 }
 
 function chpwd() {
-    chpwd_update_git_vars
+    chpwd_update_git_vars $@
 }
 
 
