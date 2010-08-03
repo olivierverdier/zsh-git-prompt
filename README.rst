@@ -46,20 +46,15 @@ The symbols are as follows:
 Install
 -------
 
-#. Copy the contents of ``zshrc.sh`` into your ``~/.zshrc`` config file (and adapt the ``PROMPT`` variable to your needs)
-#. Create the directories ``~/.zsh`` and ``~/.zsh/functions`` if they do not exist
-#. Move the files so as to get the following structure::
+#. Create the directory ``~/.zsh/git-prompt`` if it does not exist (this location is customizable).
+#. Move the file ``gitstatus.py`` into ``~/.zsh/git-prompt/``.
+#. Source the file ``zshrc.sh`` from your ``~/.zshrc`` config file, and, optionally, configure your prompt. So, somewhere in ``~/.zshrc``, you should have::
 
-	.zsh/
-		gitstatus.py
-		functions/
-			chpwd_update_git_vars.sh
-			precmd_update_git_vars.sh
-			preexec_update_git_vars.sh
-			prompt_git_info
-			update_current_git_vars.sh
+	source path/to/zshrc.sh
+	# configure the following, or leave it commented out:
+	# PROMPT='%B%m%~%b$(prompt_git_info) %# '
 
-#. Adapt the format of the git information inside the ``prompt_git_info`` file to your needs.
+#. You may also redefine the function ``prompt_git_info`` (after the ``source`` statement) to adapt it to your needs (change the colour, or the order of each piece of information). Take a look in the file ``zshrc.sh`` to see what this function may look like.
 #. Go in a git repository and test it!
 
 **Enjoy!**
