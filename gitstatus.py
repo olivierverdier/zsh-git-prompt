@@ -24,7 +24,7 @@ untracked = re.compile(r'^# Untracked files:$', re.MULTILINE)
 unmerged = re.compile(r'^# Unmerged paths:$', re.MULTILINE)
 
 def execute(*command):
-	out, err = Popen(*command, stdout=PIPE, stderr=PIPE).communicate()
+	out, err = Popen(stdout=PIPE, stderr=PIPE, *command).communicate()
 	if not err:
 		nb = len(out.splitlines())
 	else:
