@@ -19,7 +19,8 @@ diverge_re = re.compile(r"^# and have (\d+) and (\d+) different")
 
 status = ''
 staged = re.compile(r'^# Changes to be committed:$', re.MULTILINE)
-changed = re.compile(r'^# Changed but not updated:$', re.MULTILINE)
+old_changed = re.compile(r'^# Changed but not updated:$', re.MULTILINE)
+new_changed = re.compile(r'^# Changes not staged for commit:$', re.MULTILINE)
 untracked = re.compile(r'^# Untracked files:$', re.MULTILINE)
 unmerged = re.compile(r'^# Unmerged paths:$', re.MULTILINE)
 
@@ -37,7 +38,7 @@ if staged.search(output):
 if unmerged.search(output):
 	nb = execute(['git','diff', '--staged','--name-only', '--diff-filter=U'])
 	status += '%s%s' % (symbols['unmerged'], nb)
-if changed.search(output):
+if new_changed.search(output) or old_changed.search(output):
 	nb = execute(['git','diff','--name-only', '--diff-filter=ACDMRT'])
 	status += '%s%s' % (symbols['changed'], nb)
 if untracked.search(output):
