@@ -6,64 +6,55 @@ symbols = {'ahead of': '↑', 'behind': '↓', 'staged':'♦', 'changed':'‣', 
 
 from subprocess import Popen, PIPE
 
-output,error = Popen(['git','status'], stdout=PIPE, stderr=PIPE).communicate()
+branch,error = Popen(['git', 'symbolic-ref', 'HEAD'], stdout=PIPE, stderr=PIPE).communicate()
 
-if error:
+if error.find('fatal: Not a git repository') != -1:
 	import sys
 	sys.exit(0)
-lines = output.splitlines()
 
-import re
-behead_re = re.compile(r"^# Your branch is (ahead of|behind) '(.*)' by (\d+) commit")
-diverge_re = re.compile(r"^# and have (\d+) and (\d+) different")
+branch = branch[11:-1]
 
 status = ''
-staged = re.compile(r'^# Changes to be committed:$', re.MULTILINE)
-old_changed = re.compile(r'^# Changed but not updated:$', re.MULTILINE)
-new_changed = re.compile(r'^# Changes not staged for commit:$', re.MULTILINE)
-untracked = re.compile(r'^# Untracked files:$', re.MULTILINE)
-unmerged = re.compile(r'^# Unmerged paths:$', re.MULTILINE)
 
-def execute(*command):
-	out, err = Popen(stdout=PIPE, stderr=PIPE, *command).communicate()
-	if not err:
-		nb = len(out.splitlines())
-	else:
-		nb = '?'
-	return nb
-
-if staged.search(output):
-	nb = execute(['git','diff','--staged','--name-only','--diff-filter=ACDMRT'])
-	status += '%s%s' % (symbols['staged'], nb)
-if unmerged.search(output):
-	nb = execute(['git','diff', '--staged','--name-only', '--diff-filter=U'])
-	status += '%s%s' % (symbols['unmerged'], nb)
-if new_changed.search(output) or old_changed.search(output):
-	nb = execute(['git','diff','--name-only', '--diff-filter=ACDMRT'])
-	status += '%s%s' % (symbols['changed'], nb)
-if untracked.search(output):
-## 		nb = len(Popen(['git','ls-files','--others','--exclude-standard'],stdout=PIPE).communicate()[0].splitlines())
-## 		status += "%s" % (symbols['untracked']*(nb//3 + 1), )
+changed = [namestat[0] for namestat in Popen(['git','diff','--name-status'], stdout=PIPE).communicate()[0].splitlines()]
+staged = [namestat[0] for namestat in Popen(['git','diff', '--staged','--name-status'], stdout=PIPE).communicate()[0].splitlines()]
+nb_changed = len(changed) - changed.count('U')
+nb_U = staged.count('U')
+nb_staged = len(staged) - nb_U
+if nb_staged:
+	status += '%s%s' % (symbols['staged'], nb_staged)
+if nb_U:
+	status += '%s%s' % (symbols['unmerged'], nb_U)
+if nb_changed:
+	status += '%s%s' % (symbols['changed'], nb_changed)
+nb = len(Popen(['git','ls-files','--others','--exclude-standard'],stdout=PIPE).communicate()[0].splitlines())
+if nb:
 	status += symbols['untracked']
 if status == '':
 	status = symbols['clean']
 
 remote = ''
 
-bline = lines[0]
-if bline.find('Not currently on any branch') != -1:
+if not branch: # not on any branch
 	branch = symbols['sha1']+ Popen(['git','rev-parse','--short','HEAD'], stdout=PIPE).communicate()[0][:-1]
 else:
-	branch = bline.split(' ')[3]
-	bstatusline = lines[1]
-	match = behead_re.match(bstatusline)
-	if match:
-		remote = symbols[match.groups()[0]]
-		remote += match.groups()[2]
-	elif lines[2:]:
-		div_match = diverge_re.match(lines[2])
-	 	if div_match:
-			remote = "{behind}{1}{ahead of}{0}".format(*div_match.groups(), **symbols)
-
+	remote_name = Popen(['git','config','branch.%s.remote' % branch], stdout=PIPE).communicate()[0].strip()
+	if remote_name:
+		merge_name = Popen(['git','config','branch.%s.merge' % branch], stdout=PIPE).communicate()[0].strip()
+		if remote_name == '.': # local
+			remote_ref = merge_name
+		else:
+			remote_ref = 'refs/remotes/%s/%s' % (remote_name, merge_name[11:])
+		revlist,err = Popen(['git', 'rev-list', '--left-right', '%s...HEAD' % remote_ref],stdout=PIPE,stderr=PIPE).communicate()
+		if err.find('fatal:') != -1: # fallback to local
+			revlist,err = Popen(['git', 'rev-list', '--left-right', '%s...HEAD' % merge_name],stdout=PIPE,stderr=PIPE).communicate()
+		behead = revlist.splitlines()
+		ahead = len([x for x in behead if x[0]=='>'])
+		behind = len(behead) - ahead
+		if behind:
+			remote += '%s%s' % (symbols['behind'], behind)
+		if ahead:
+			remote += '%s%s' % (symbols['ahead of'], ahead)
+	
 print '\n'.join([branch,remote,status])
 
