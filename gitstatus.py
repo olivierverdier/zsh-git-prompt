@@ -6,9 +6,10 @@ symbols = {'ahead of': '↑', 'behind': '↓', 'staged':'♦', 'changed':'‣', 
 
 from subprocess import Popen, PIPE
 
-branch,error = Popen(['git', 'symbolic-ref', 'HEAD'], stdout=PIPE, stderr=PIPE).communicate()
+gitsym = Popen(['git', 'symbolic-ref', 'HEAD'], stdout=PIPE,)
+branch = gitsym.communicate()[0]
 
-if error.find('fatal: Not a git repository') != -1:
+if gitsym.returncode != 0:
 	import sys
 	sys.exit(0)
 
@@ -42,9 +43,10 @@ else:
 			remote_ref = merge_name
 		else:
 			remote_ref = 'refs/remotes/%s/%s' % (remote_name, merge_name[11:])
-		revlist,err = Popen(['git', 'rev-list', '--left-right', '%s...HEAD' % remote_ref],stdout=PIPE,stderr=PIPE).communicate()
-		if err.find('fatal:') != -1: # fallback to local
-			revlist,err = Popen(['git', 'rev-list', '--left-right', '%s...HEAD' % merge_name],stdout=PIPE,stderr=PIPE).communicate()
+		revgit = Popen(['git', 'rev-list', '--left-right', '%s...HEAD' % remote_ref],stdout=PIPE,)
+		revlist = revgit.communicate()[0]
+		if revgit.returncode != 0: # fallback to local
+			revlist = Popen(['git', 'rev-list', '--left-right', '%s...HEAD' % merge_name],stdout=PIPE,).communicate()[0]
 		behead = revlist.splitlines()
 		ahead = len([x for x in behead if x[0]=='>'])
 		behind = len(behead) - ahead
