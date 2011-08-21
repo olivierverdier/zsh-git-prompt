@@ -6,7 +6,7 @@ symbols = {'ahead of': '↑', 'behind': '↓', 'staged':'♦', 'changed':'‣', 
 
 from subprocess import Popen, PIPE
 
-gitsym = Popen(['git', 'symbolic-ref', 'HEAD'], stdout=PIPE,)
+gitsym = Popen(['git', 'symbolic-ref', 'HEAD'], stdout=PIPE, stderr=PIPE)
 branch = gitsym.communicate()[0]
 
 if gitsym.returncode != 0:
@@ -43,10 +43,10 @@ else:
 			remote_ref = merge_name
 		else:
 			remote_ref = 'refs/remotes/%s/%s' % (remote_name, merge_name[11:])
-		revgit = Popen(['git', 'rev-list', '--left-right', '%s...HEAD' % remote_ref],stdout=PIPE,)
+		revgit = Popen(['git', 'rev-list', '--left-right', '%s...HEAD' % remote_ref],stdout=PIPE, stderr=PIPE)
 		revlist = revgit.communicate()[0]
 		if revgit.returncode != 0: # fallback to local
-			revlist = Popen(['git', 'rev-list', '--left-right', '%s...HEAD' % merge_name],stdout=PIPE,).communicate()[0]
+			revlist = Popen(['git', 'rev-list', '--left-right', '%s...HEAD' % merge_name],stdout=PIPE, stderr=PIPE).communicate()[0]
 		behead = revlist.splitlines()
 		ahead = len([x for x in behead if x[0]=='>'])
 		behind = len(behead) - ahead
