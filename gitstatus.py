@@ -55,5 +55,13 @@ else:
 		if ahead:
 			remote += '%s%s' % (symbols['ahead of'], ahead)
 
-print '\n'.join([branch,remote,staged,conflicts,changed,untracked,clean])
+out = '\n'.join([
+	branch,
+	remote,
+	staged,
+	conflicts,
+	changed,
+	untracked,
+	clean])
+print out
 
