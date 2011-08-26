@@ -7,13 +7,13 @@ symbols = {'ahead of': '↑', 'behind': '↓', 'prehash':':'}
 from subprocess import Popen, PIPE
 
 gitsym = Popen(['git', 'symbolic-ref', 'HEAD'], stdout=PIPE, stderr=PIPE)
-branch = gitsym.communicate()[0].strip()
+branch, error = gitsym.communicate()
 
-if gitsym.poll():
+if error.find('fatal: Not a git repository') != -1:
 	import sys
 	sys.exit(0)
 
-branch = branch[11:]
+branch = branch.strip()[11:]
 
 
 changed_files = [namestat[0] for namestat in Popen(['git','diff','--name-status'], stdout=PIPE).communicate()[0].splitlines()]
