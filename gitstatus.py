@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: UTF-8 -*-
 
+from __future__ import print_function
+
 # change those symbols to whatever you prefer
 symbols = {'ahead of': '↑', 'behind': '↓', 'prehash':':'}
 
@@ -9,7 +11,9 @@ from subprocess import Popen, PIPE
 gitsym = Popen(['git', 'symbolic-ref', 'HEAD'], stdout=PIPE, stderr=PIPE)
 branch, error = gitsym.communicate()
 
-if error.find('fatal: Not a git repository') != -1:
+error_string = error.decode('utf-8')
+
+if error_string.find('fatal: Not a git repository') != -1:
 	import sys
 	sys.exit(0)
 
@@ -56,12 +60,12 @@ else:
 			remote += '%s%s' % (symbols['ahead of'], ahead)
 
 out = '\n'.join([
-	branch,
+	str(branch),
 	remote,
 	staged,
 	conflicts,
 	changed,
 	untracked,
 	clean])
-print out
+print(out)
 
