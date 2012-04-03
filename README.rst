@@ -26,23 +26,29 @@ Here is how it could look like when you are ahead by 4 commits, behind by 5 comm
 
 .. _blog post: http://sebastiancelis.com/2009/nov/16/zsh-prompt-git-users/
 
-Symbols
--------
+Prompt Structure
+----------------
+
+By default, the general appearance of the prompt is::
+
+    (<branch><branch tracking>|<local status>)
 
 The symbols are as follows:
 
-* Status Symbols
+* Local Status Symbols
 	:✔: repository clean
 	:●n: there are ``n`` staged files
 	:✖n: there are ``n`` unmerged files
 	:✚n: there are ``n`` changed but *unstaged* files
 	:…: there are some untracked files
 
-* Branch Symbols
+* Branch Tracking Symbols
 	:↑n: ahead of remote by ``n`` commits
 	:↓n: behind remote by ``n`` commits
 	:↓m↑n: branches diverged, other by ``m`` commits, yours by ``n`` commits
-	:\:: when the branch name starts with a colon ``:``, it means it's actually a hash, not a branch (although it should be pretty clear, unless you name your branches like hashes :-)
+
+* Branch Symbol
+	When the branch name starts with a colon ``:``, it means it's actually a hash, not a branch (although it should be pretty clear, unless you name your branches like hashes :-)
 
 Install
 -------
