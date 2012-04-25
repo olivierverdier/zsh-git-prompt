@@ -8,19 +8,22 @@ symbols = {'ahead of': '↑', 'behind': '↓', 'prehash':':'}
 
 from subprocess import Popen, PIPE
 
+import sys
 gitsym = Popen(['git', 'symbolic-ref', 'HEAD'], stdout=PIPE, stderr=PIPE)
 branch, error = gitsym.communicate()
 
 error_string = error.decode('utf-8')
 
 if error_string.find('fatal: Not a git repository') != -1:
-	import sys
 	sys.exit(0)
 
 branch = branch.strip()[11:]
 
-
-changed_files = [namestat[0] for namestat in Popen(['git','diff','--name-status'], stdout=PIPE).communicate()[0].splitlines()]
+res, err = Popen(['git','diff','--name-status'], stdout=PIPE, stderr=PIPE).communicate()
+err_string = err.decode('utf-8')
+if err_string.find('fatal') != -1:
+	sys.exit(0)
+changed_files = [namestat[0] for namestat in res.splitlines()]
 staged_files = [namestat[0] for namestat in Popen(['git','diff', '--staged','--name-status'], stdout=PIPE).communicate()[0].splitlines()]
 nb_changed = len(changed_files) - changed_files.count('U')
 nb_U = staged_files.count('U')
