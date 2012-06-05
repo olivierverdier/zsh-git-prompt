@@ -72,7 +72,7 @@ git_super_status() {
 	  if [ "$GIT_UNTRACKED" -ne "0" ]; then
 		  STATUS="$STATUS$ZSH_THEME_GIT_PROMPT_UNTRACKED%{${reset_color}%}"
 	  fi
-	  if [ "$GIT_STASHED" -ne "0" ]; then
+	  if [ "$ZSH_THEME_GIT_PROMPT_STASHED_ACTIVE" -eq "1" ] && [ "$GIT_STASHED" -ne "0" ]; then
 		  STATUS="$STATUS$ZSH_THEME_GIT_PROMPT_STASHED$GIT_STASHED%{${reset_color}%}"
 	  fi
 	  if [ "$GIT_CLEAN" -eq "1" ]; then
