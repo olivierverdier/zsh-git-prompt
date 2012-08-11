@@ -9,7 +9,7 @@ In particular the branch name, difference with remote branch, number of files st
 Examples
 --------
 
-The prompt may look like the following: 
+The prompt may look like the following:
 
 * ``(master↑3|✚1)``: on branch ``master``, ahead of remote by 3 commits, 1 file changed but not staged
 * ``(status|●2)``: on branch ``status``, 2 files staged
@@ -18,11 +18,30 @@ The prompt may look like the following:
 * ``(experimental↓2↑3|✔)``: on branch ``experimental``; your branch has diverged by 3 commits, remote by 2 commits; the repository is otherwise clean
 * ``(:70c2952|✔)``: not on any branch; parent commit has hash ``70c2952``; the repository is otherwise clean
 
-Here is how it could look like when you are ahead by 4 commits, behind by 5 commits, and have 1 staged files, 1 changed but unstaged file, and some untracked files, on branch ``dev``:
+Fork update
+-----------
 
-.. image:: https://github.com/olivierverdier/zsh-git-prompt/raw/master/screenshot.png
+In ~/.zshrc set your prompt::
+
+    source $ZSH/oh-my-zsh.sh
+    source ~/.zsh/git-prompt/zshrc.sh
+
+    PROMPT='
+    %{$fg[cyan]%}%~ $(git_super_status)
+    %{$fg_bold[red]%}➜  '
+
+    RPROMPT='!%{%B%F{cyan}%}%!%{%f%k%b%}'
+
+* updated some of the git status icons and the spacing between them to make the display more pleasing and readable.
+* removed the git display in directories that are not under git control.
+* put prompt on the next line to have some separation between display and input.
+* added the bang history to the right hand side, since it is a feature I use often.
+An example of how this looks with the updates is as follows:
+
+.. image:: https://github.com/superplussed/zsh-git-prompt/blob/master/screenshot.png?raw=true
 	:alt: Example
 
+**Thanks Olivier for the awesome script!!**
 
 .. _blog post: http://sebastiancelis.com/2009/nov/16/zsh-prompt-git-users/
 
@@ -57,7 +76,7 @@ Install
 #. Move the file ``gitstatus.py`` into ``~/.zsh/git-prompt/``.
 #. Source the file ``zshrc.sh`` from your ``~/.zshrc`` config file, and, configure your prompt. So, somewhere in ``~/.zshrc``, you should have::
 
-	source path/to/zshrc.sh
+  source path/to/zshrc.sh
 	# an example prompt
 	PROMPT='%B%m%~%b$(git_super_status) %# '
 
