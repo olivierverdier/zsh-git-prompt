@@ -1,5 +1,12 @@
 # To install source this file from your .zshrc file
 
+if ! which python > /dev/null
+then
+   # If we don't have python, then create a stub and return.
+   git_super_status() { }
+   return
+fi
+
 # Change this to reflect your installation directory
 : ${GIT_PROMPT_DIR:=$HOME/.zsh/git-prompt}
 export __GIT_PROMPT_DIR=$GIT_PROMPT_DIR
