@@ -11,7 +11,7 @@ fi
 : ${GIT_PROMPT_DIR:=$HOME/.zsh/git-prompt}
 export __GIT_PROMPT_DIR=$GIT_PROMPT_DIR
 
-# Commonly, the colors. is already loaded.
+# Commonly, colors is already loaded.
 if [[ -z $color ]]
 then
    # Initialize colors.
