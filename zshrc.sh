@@ -1,7 +1,10 @@
 # To install source this file from your .zshrc file
 
 # Change this to reflect your installation directory
-export __GIT_PROMPT_DIR=~/.zsh/git-prompt
+
+: ${GIT_PROMPT_DIR:=$HOME/.zsh/git-prompt}
+
+export __GIT_PROMPT_DIR=$GIT_PROMPT_DIR
 # Initialize colors.
 autoload -U colors
 colors
@@ -80,16 +83,22 @@ git_super_status() {
 	fi
 }
 
+: ${ZSH_THEME_GIT_PROMPT_BRANCH_COLOR:=$fg_bold[magenta]}
+: ${ZSH_THEME_GIT_PROMPT_STAGED_COLOR:=$fg[red]}
+: ${ZSH_THEME_GIT_PROMPT_CONFLICTS_COLOR:=$fg[red]}
+: ${ZSH_THEME_GIT_PROMPT_CHANGED_COLOR:=$fg[red]}
+: ${ZSH_THEME_GIT_PROMPT_CLEAN_COLOR:=$fg_bold[green]}
+
 # Default values for the appearance of the prompt. Configure at will.
 ZSH_THEME_GIT_PROMPT_PREFIX="("
 ZSH_THEME_GIT_PROMPT_SUFFIX=")"
 ZSH_THEME_GIT_PROMPT_SEPARATOR="|"
-ZSH_THEME_GIT_PROMPT_BRANCH="%{$fg_bold[magenta]%}"
-ZSH_THEME_GIT_PROMPT_STAGED="%{$fg[red]%}●"
-ZSH_THEME_GIT_PROMPT_CONFLICTS="%{$fg[red]%}✖"
-ZSH_THEME_GIT_PROMPT_CHANGED="%{$fg[blue]%}✚"
+ZSH_THEME_GIT_PROMPT_BRANCH="%{$ZSH_THEME_GIT_PROMPT_BRANCH_COLOR%}"
+ZSH_THEME_GIT_PROMPT_STAGED="%{$ZSH_THEME_GIT_PROMPT_STAGED_COLOR%}●"
+ZSH_THEME_GIT_PROMPT_CONFLICTS="%{$ZSH_THEME_GIT_PROMPT_CONFLICTS_COLOR%}✖"
+ZSH_THEME_GIT_PROMPT_CHANGED="%{$ZSH_THEME_GIT_PROMPT_CHANGED_COLOR%}✚"
 ZSH_THEME_GIT_PROMPT_REMOTE=""
 ZSH_THEME_GIT_PROMPT_UNTRACKED="…"
-ZSH_THEME_GIT_PROMPT_CLEAN="%{$fg_bold[green]%}✔"
+ZSH_THEME_GIT_PROMPT_CLEAN="%{$ZSH_THEME_GIT_PROMPT_CLEAN_COLOR%}✔"
 
 
