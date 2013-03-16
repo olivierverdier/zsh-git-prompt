@@ -1,13 +1,16 @@
 # To install source this file from your .zshrc file
 
 # Change this to reflect your installation directory
-
 : ${GIT_PROMPT_DIR:=$HOME/.zsh/git-prompt}
-
 export __GIT_PROMPT_DIR=$GIT_PROMPT_DIR
-# Initialize colors.
-autoload -U colors
-colors
+
+# Commonly, the colors. is already loaded.
+if [[ -z $color ]]
+then
+   # Initialize colors.
+   autoload -U colors
+   colors
+fi
 
 # Allow for functions in the prompt.
 setopt PROMPT_SUBST
