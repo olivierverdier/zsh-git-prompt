@@ -64,4 +64,16 @@ Install
 #. You may also redefine the function ``git_super_status`` (after the ``source`` statement) to adapt it to your needs (to change the order in which the information is displayed).  Define the variable ``ZSH_THEME_GIT_PROMPT_NOCACHE`` in order to disable caching.  You may also change a number of variables (which name start with ``ZSH_THEME_GIT_PROMPT_``) to change the appearance of the prompt.  Take a look in the file ``zshrc.sh`` to see how the function ``git_super_status`` is defined, and what variables are available.
 #. Go in a git repository and test it!
 
+Customization
+-------------
+
+The following parameters may be set prior to sourcing ``zshrc.sh``.
+
+* ``GIT_PROMPT_DIR`` -- directory in which to find ``gitstatus.py``
+* ``ZSH_THEME_GIT_PROMPT_BRANCH_COLOR`` -- prompt color for branch
+* ``ZSH_THEME_GIT_PROMPT_STAGED_COLOR`` -- prompt color for staged
+* ``ZSH_THEME_GIT_PROMPT_CONFLICTS_COLOR`` -- prompt color for conflicts
+* ``ZSH_THEME_GIT_PROMPT_CHANGED_COLOR`` -- prompt color for changed
+* ``ZSH_THEME_GIT_PROMPT_CLEAN_COLOR`` -- prompt color for clean
+
 **Enjoy!**
