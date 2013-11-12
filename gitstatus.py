@@ -9,6 +9,8 @@ symbols = {'ahead of': '↑', 'behind': '↓', 'prehash':':'}
 from subprocess import Popen, PIPE
 
 import sys
+import os
+
 gitsym = Popen(['git', 'symbolic-ref', 'HEAD'], stdout=PIPE, stderr=PIPE)
 branch, error = gitsym.communicate()
 
@@ -30,6 +32,11 @@ nb_U = staged_files.count('U')
 nb_staged = len(staged_files) - nb_U
 staged = str(nb_staged)
 conflicts = str(nb_U)
+if os.environ['ZSH_THEME_GIT_PROMPT_STASHED_ACTIVE'] == '1':
+        nb_stashed = len(Popen(['git','stash','list'],stdout=PIPE).communicate()[0].splitlines())
+        stashed = str(nb_stashed)
+else:
+        stashed = ""
 changed = str(nb_changed)
 nb_untracked = len(Popen(['git','ls-files','--others','--exclude-standard'],stdout=PIPE).communicate()[0].splitlines())
 untracked = str(nb_untracked)
@@ -69,6 +76,7 @@ out = '\n'.join([
 	conflicts,
 	changed,
 	untracked,
+        stashed,
 	clean])
 print(out)
 
