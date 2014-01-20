@@ -1,10 +1,10 @@
 #!/usr/bin/env python
-# -*- coding: UTF-8 -*-
+# -*- coding: utf-8 -*-
 
 from __future__ import print_function
 
 # change those symbols to whatever you prefer
-symbols = {'ahead of': '↑', 'behind': '↓', 'prehash':':'}
+symbols = {'ahead of': u'\u2191', 'behind': '\u2193', 'prehash':':'}
 
 from subprocess import Popen, PIPE
 
@@ -17,7 +17,7 @@ error_string = error.decode('utf-8')
 if 'fatal: Not a git repository' in error_string:
 	sys.exit(0)
 
-branch = branch.strip()[11:]
+branch = branch.decode('utf-8').strip()[11:]
 
 res, err = Popen(['git','diff','--name-status'], stdout=PIPE, stderr=PIPE).communicate()
 err_string = err.decode('utf-8')
