@@ -3,8 +3,8 @@
 
 from __future__ import print_function
 
-# change those symbols to whatever you prefer
-symbols = {'ahead of': '↑', 'behind': '↓', 'prehash':':'}
+# change this symbol to whatever you prefer
+prehash = ':'
 
 from subprocess import Popen, PIPE
 
@@ -38,10 +38,10 @@ if not nb_changed and not nb_staged and not nb_U and not nb_untracked:
 else:
 	clean = '0'
 
-remote = ''
+ahead, behind = 0,0
 
 if not branch: # not on any branch
-	branch = symbols['prehash']+ Popen(['git','rev-parse','--short','HEAD'], stdout=PIPE).communicate()[0][:-1]
+	branch = prehash + Popen(['git','rev-parse','--short','HEAD'], stdout=PIPE).communicate()[0][:-1]
 else:
 	remote_name = Popen(['git','config','branch.%s.remote' % branch], stdout=PIPE).communicate()[0].strip()
 	if remote_name:
@@ -57,14 +57,11 @@ else:
 		behead = revlist.splitlines()
 		ahead = len([x for x in behead if x[0]=='>'])
 		behind = len(behead) - ahead
-		if behind:
-			remote += '%s%s' % (symbols['behind'], behind)
-		if ahead:
-			remote += '%s%s' % (symbols['ahead of'], ahead)
 
 out = '\n'.join([
 	str(branch),
-	remote,
+	str(ahead),
+	str(behind),
 	staged,
 	conflicts,
 	changed,
