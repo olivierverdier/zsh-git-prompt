@@ -32,10 +32,6 @@ conflicts = str(nb_U)
 changed = str(nb_changed)
 nb_untracked = len(Popen(['git','ls-files','--others','--exclude-standard'],stdout=PIPE).communicate()[0].splitlines())
 untracked = str(nb_untracked)
-if not nb_changed and not nb_staged and not nb_U and not nb_untracked:
-	clean = '1'
-else:
-	clean = '0'
 
 ahead, behind = 0,0
 
@@ -65,6 +61,6 @@ out = '\n'.join([
 	conflicts,
 	changed,
 	untracked,
-	clean])
+	])
 print(out)
 
