@@ -53,9 +53,8 @@ The symbols are as follows:
 Install
 -------
 
-#. Create the directory ``~/.zsh/git-prompt`` if it does not exist (this location is customizable).
-#. Move the file ``gitstatus.py`` into ``~/.zsh/git-prompt/``.
-#. Source the file ``zshrc.sh`` from your ``~/.zshrc`` config file, and, configure your prompt. So, somewhere in ``~/.zshrc``, you should have::
+#. Clone this repository somewhere on your hard drive.
+#. Source the file ``zshrc.sh`` from your ``~/.zshrc`` config file, and configure your prompt. So, somewhere in ``~/.zshrc``, you should have::
 
 	source path/to/zshrc.sh
 	# an example prompt

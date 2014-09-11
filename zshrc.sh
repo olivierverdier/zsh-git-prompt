@@ -1,7 +1,10 @@
 # To install source this file from your .zshrc file
 
-# Change this to reflect your installation directory
-export __GIT_PROMPT_DIR=~/.zsh/git-prompt
+# see documentation at http://linux.die.net/man/1/zshexpn
+# A: finds the absolute path, even if this is symlinked
+# h: equivalent to dirname
+export __GIT_PROMPT_DIR=${0:A:h}
+
 # Initialize colors.
 autoload -U colors
 colors
