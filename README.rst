@@ -59,8 +59,13 @@ Install
 	source path/to/zshrc.sh
 	# an example prompt
 	PROMPT='%B%m%~%b$(git_super_status) %# '
-
-#. You may also redefine the function ``git_super_status`` (after the ``source`` statement) to adapt it to your needs (to change the order in which the information is displayed).  Define the variable ``ZSH_THEME_GIT_PROMPT_CACHE`` in order to enable caching.  You may also change a number of variables (which name start with ``ZSH_THEME_GIT_PROMPT_``) to change the appearance of the prompt.  Take a look in the file ``zshrc.sh`` to see how the function ``git_super_status`` is defined, and what variables are available.
 #. Go in a git repository and test it!
+
+Customisation
+-------------
+
+* You may redefine the function ``git_super_status`` (after the ``source`` statement) to adapt it to your needs (to change the order in which the information is displayed).
+* Define the variable ``ZSH_THEME_GIT_PROMPT_CACHE`` in order to enable caching.
+* You may also change a number of variables (which name start with ``ZSH_THEME_GIT_PROMPT_``) to change the appearance of the prompt.  Take a look in the file ``zshrc.sh`` to see how the function ``git_super_status`` is defined, and what variables are available.
 
 **Enjoy!**
