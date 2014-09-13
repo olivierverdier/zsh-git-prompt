@@ -1,0 +1,48 @@
+name:                git-prompt
+
+-- PVP summary:      +-+------- breaking API changes
+--                   | | +----- non-breaking API additions
+--                   | | | +--- code changes with no API change
+version:             0.1.0.0
+
+synopsis:          Informative git prompt for zsh      
+
+-- description:         
+
+homepage:            https://github.com/olivierverdier/zsh-git-prompt
+
+license:             MIT
+
+license-file:        LICENSE.md
+
+author:              Olivier Verdier
+
+maintainer:          olivier.verdier@gmail.com
+
+build-type:          Simple
+
+extra-source-files:  README.rst
+
+cabal-version:       >=1.10
+
+
+executable gitstatus
+  main-is:             Main.hs
+  
+  -- other-modules:       
+  
+  -- other-extensions:    
+  
+  build-depends:       base >=4.6 && <4.7, parsec >=3.1 && <3.2, process>=1.1.0.2
+  
+  -- hs-source-dirs:      
+  
+  -- Base language which the package is written in.
+  default-language:    Haskell2010
+
+  ghc-options: -Wall -O2
+  cc-options: -O3
+
+  hs-source-dirs: src
+  
+

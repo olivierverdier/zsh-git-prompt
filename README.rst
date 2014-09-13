@@ -61,6 +61,15 @@ Install
 	PROMPT='%B%m%~%b$(git_super_status) %# '
 #. Go in a git repository and test it!
 
+Haskell (optional)
+##################
+
+There is now a Haksell implementation as well, which can be four to six times faster than the Python one. The reason is not that Haskell is faster in itself (although it is), but that this implementation calls ``git`` only once. To install, do the following:
+
+#. Make sure Haskell is installed on your system
+#. Run ``cabal build`` from this folder
+#. Define the variable ``GIT_PROMPT_EXECUTABLE="haskell"`` somewhere in your ``.zshrc``
+
 Customisation
 -------------
 
