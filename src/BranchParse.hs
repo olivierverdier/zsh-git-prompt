@@ -1,4 +1,4 @@
-module BranchParse (branchInfo, BranchInfo, noBranchInfo) where
+module BranchParse (branchInfo, BranchInfo, noBranchInfo, Branch) where
 
 import Control.Applicative hiding ((<|>), many, optional)
 import Text.Parsec
@@ -15,7 +15,8 @@ or
  -}
 
 type AheadBehind = (Int, Int)
-type BranchInfo = ((Maybe String, Maybe String), Maybe AheadBehind)
+type Branch = String
+type BranchInfo = ((Maybe Branch, Maybe Branch), Maybe AheadBehind)
 
 noBranchInfo :: BranchInfo
 noBranchInfo = ((Nothing, Nothing), Nothing)
@@ -30,7 +31,7 @@ noBranch =
 	noBranchInfo
 		<$ many (noneOf "(") <* string "(no branch)" <* eof
 
-trackedBranch :: Parser String
+trackedBranch :: Parser Branch
 trackedBranch = manyTill anyChar (string "...")
 
 branchRemoteTracking :: Parser BranchInfo

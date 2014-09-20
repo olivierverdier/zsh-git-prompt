@@ -7,7 +7,6 @@ import StatusParse
 
 {- Type aliases -}
 
-type Branch = String
 type Hash = String
 type Numbers = [String]
 
