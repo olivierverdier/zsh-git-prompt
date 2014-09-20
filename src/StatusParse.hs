@@ -1,11 +1,11 @@
-module StatusParse (processStatus, StatusT(StatusC)) where
+module StatusParse (processStatus, StatusT(StatusC, staged, conflict, changed, untracked)) where
 
 {- Full status information -}
 data StatusT a = StatusC {
 	staged :: a,
 	conflict :: a,
 	changed :: a,
-	untracked :: a} deriving Show
+	untracked :: a} deriving (Eq, Show)
 
 {- The two characters starting a git status line: -}
 type MiniStatus = (Char, Char)
