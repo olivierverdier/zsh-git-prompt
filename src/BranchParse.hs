@@ -23,7 +23,7 @@ noBranchInfo = ((Nothing, Nothing), Nothing)
 
 newRepo :: Parser BranchInfo
 newRepo = 
-	fmap (\ s -> ((Just s, Nothing), Nothing))
+	fmap (\ branch -> ((Just branch, Nothing), Nothing))
 		$ string "Initial commit on " *> many anyChar <* eof
 
 noBranch :: Parser BranchInfo
@@ -36,20 +36,20 @@ trackedBranch = manyTill anyChar (string "...")
 
 branchRemoteTracking :: Parser BranchInfo
 branchRemoteTracking = 
-	(\ bn tracking behead -> ((Just bn, Just tracking), Just behead))
+	(\ branch tracking behead -> ((Just branch, Just tracking), Just behead))
 		<$> trackedBranch
 		<*> many (noneOf " ") <* char ' '
 		<*> inBrackets
 
 branchRemote :: Parser BranchInfo
 branchRemote = 
-	(\ bn tracking -> ((Just bn, Just tracking), Nothing))
+	(\ branch tracking -> ((Just branch, Just tracking), Nothing))
 		<$> trackedBranch
 		<*> many (noneOf " ") <* eof
 
 branchOnly :: Parser BranchInfo
 branchOnly = 
-	(\ bn -> ((Just bn, Nothing), Nothing))
+	(\ branch -> ((Just branch, Nothing), Nothing))
 		<$> many (noneOf " ") <* eof
 
 branchParser :: Parser BranchInfo
@@ -65,8 +65,8 @@ inBrackets :: Parser AheadBehind
 inBrackets = between (char '[') (char ']') (behind <|> try aheadBehind <|> ahead)
 
 makeAheadBehind :: String -> (Int -> AheadBehind) -> Parser AheadBehind
-makeAheadBehind name cons = 
-	cons . read <$> (string (name ++ " ") *> many1 digit)
+makeAheadBehind name constructor = 
+	constructor . read <$> (string (name ++ " ") *> many1 digit)
 
 ahead :: Parser AheadBehind
 ahead = makeAheadBehind "ahead" (\ n -> (n,0))
@@ -74,7 +74,7 @@ behind :: Parser AheadBehind
 behind = makeAheadBehind "behind" (\ n -> (0,n))
 aheadBehind :: Parser AheadBehind
 aheadBehind =
-	(\ (a,_) (_,b) -> (a,b))
+	(\ (aheadBy,_) (_,behindBy) -> (aheadBy, behindBy))
 		<$> ahead
 		<* string ", "
 		<*> behind

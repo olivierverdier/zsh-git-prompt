@@ -12,20 +12,20 @@ type MiniStatus = (Char, Char)
 
 {- Interpretation of mini status -}
 isChanged :: MiniStatus -> Bool
-isChanged (i,w) =
-		w == 'M' || (w == 'D' && i /= 'D')
+isChanged (index,work) =
+		work == 'M' || (work == 'D' && index /= 'D')
 
 isStaged :: MiniStatus -> Bool
-isStaged (i,w) =
-		(i `elem` "MRC") || (i == 'D' && w /= 'D') || (i == 'A' && w /= 'A')
+isStaged (index,work) =
+		(index `elem` "MRC") || (index == 'D' && work /= 'D') || (index == 'A' && work /= 'A')
 
 isConflict :: MiniStatus -> Bool
-isConflict (i,w) =
-		i == 'U' || w == 'U' || (i == 'A' && w == 'A') || (i == 'D' && w == 'D')
+isConflict (index,work) =
+		index == 'U' || work == 'U' || (index == 'A' && work == 'A') || (index == 'D' && work == 'D')
 
 isUntracked :: MiniStatus -> Bool
-isUntracked (i,_) =
-		i == '?'
+isUntracked (index,_) =
+		index == '?'
 
 countByType :: (MiniStatus -> Bool) -> [MiniStatus] -> Int
 countByType isType = length . filter isType
@@ -42,7 +42,7 @@ countStatus l = StatusC
 extractMiniStatus :: String -> MiniStatus
 extractMiniStatus [] = undefined
 extractMiniStatus [_] = undefined
-extractMiniStatus (i:w:_) = (i,w)
+extractMiniStatus (index:work:_) = (index,work)
 
 processStatus :: [String] -> StatusT Int
 processStatus = countStatus . fmap extractMiniStatus

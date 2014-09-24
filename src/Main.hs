@@ -17,7 +17,7 @@ processBranch = either (const noBranchInfo) id . branchInfo . drop 3
 
 processGitStatus :: [String] -> (BranchInfo, StatusT Int)
 processGitStatus [] = undefined
-processGitStatus (b:s) = (processBranch b, processStatus s)
+processGitStatus (branchLine:statusLines) = (processBranch branchLine, processStatus statusLines)
 
 allInfo :: (BranchInfo, StatusT Int) -> (Maybe Branch, Numbers)
 allInfo (((branch, _), behead), StatusC s x c t) = (branch , fmap show [ahead, behind, s, x, c, t])
@@ -31,8 +31,8 @@ makeHash = (':' :) . maybe "" init
 {- Git commands -}
 
 maybeResult :: (ExitCode, a, b) -> Maybe a
-maybeResult (ex, out, _) = 
-	if ex == ExitSuccess then Just out else Nothing
+maybeResult (exitCode, output, _) = 
+	if exitCode == ExitSuccess then Just output else Nothing
 
 safeRun :: String -> [String] -> IO (Maybe String)
 safeRun command arguments = maybeResult <$> readProcessWithExitCode command arguments ""
@@ -62,7 +62,7 @@ printAll :: Maybe String -> IO ()
 printAll status = 
 	case fmap (allInfo . processGitStatus . lines) status of
 		Nothing -> return ()
-		Just (b,n) -> printBranch b >> printNumbers n
+		Just (branch,numbers) -> printBranch branch >> printNumbers numbers
 	-- maybe (return ()) (\(b,n) -> printBranch b >> printNumbers n) $ fmap (allInfo . processGitStatus . lines) status
 
 -- main
