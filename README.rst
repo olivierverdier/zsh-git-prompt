@@ -64,7 +64,7 @@ Install
 Haskell (optional)
 ##################
 
-There is now a Haksell implementation as well, which can be four to six times faster than the Python one. The reason is not that Haskell is faster in itself (although it is), but that this implementation calls ``git`` only once. To install, do the following:
+There is now a Haskell implementation as well, which can be four to six times faster than the Python one. The reason is not that Haskell is faster in itself (although it is), but that this implementation calls ``git`` only once. To install, do the following:
 
 #. Make sure Haskell is installed on your system
 #. Run ``cabal build`` from this folder
