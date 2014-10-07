@@ -32,7 +32,7 @@ noBranch =
 		<$ many (noneOf "(") <* string "(no branch)" <* eof
 
 trackedBranch :: Parser Branch
-trackedBranch = manyTill anyChar (string "...")
+trackedBranch = manyTill anyChar (try $ string "...")
 
 branchRemoteTracking :: Parser BranchInfo
 branchRemoteTracking = 
