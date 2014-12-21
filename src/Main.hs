@@ -1,9 +1,9 @@
-import System.Process
-import System.Exit
-import Control.Applicative
-import Data.Maybe
-import BranchParse
-import StatusParse
+import System.Process (readProcessWithExitCode)
+import System.Exit (ExitCode(ExitSuccess))
+import Control.Applicative ((<$>))
+import Data.Maybe (fromMaybe)
+import BranchParse (Branch, BranchInfo, branchInfo, noBranchInfo)
+import StatusParse (StatusT(StatusC), processStatus)
 
 {- Type aliases -}
 

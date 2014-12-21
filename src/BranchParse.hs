@@ -1,8 +1,10 @@
 module BranchParse (branchInfo, BranchInfo, noBranchInfo, Branch) where
 
-import Control.Applicative hiding ((<|>), many, optional)
-import Text.Parsec
-import Text.Parsec.String
+import Control.Applicative ((<$>), (<*>), (<*), (*>), (<$))
+import Text.Parsec (digit, string, char, eof, anyChar, 
+				   many, many1, manyTill, noneOf, between,
+				   parse, ParseError, (<|>), try)
+import Text.Parsec.String (Parser)
 
 {-
  The idea is to parse the first line of the git status command.
