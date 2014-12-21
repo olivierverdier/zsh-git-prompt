@@ -1,7 +1,7 @@
-module StatusParse (processStatus, StatusT(StatusC, staged, conflict, changed, untracked)) where
+module StatusParse (processStatus, Status(MakeStatus, staged, conflict, changed, untracked)) where
 
 {- Full status information -}
-data StatusT a = StatusC {
+data Status a = MakeStatus {
 	staged :: a,
 	conflict :: a,
 	changed :: a,
@@ -30,8 +30,8 @@ isUntracked (index,_) =
 countByType :: (MiniStatus -> Bool) -> [MiniStatus] -> Int
 countByType isType = length . filter isType
 
-countStatus :: [MiniStatus] -> StatusT Int
-countStatus l = StatusC 
+countStatus :: [MiniStatus] -> Status Int
+countStatus l = MakeStatus 
 	{
  	staged=countByType isStaged l,
 	conflict=countByType isConflict l,
@@ -44,6 +44,6 @@ extractMiniStatus [] = undefined
 extractMiniStatus [_] = undefined
 extractMiniStatus (index:work:_) = (index,work)
 
-processStatus :: [String] -> StatusT Int
+processStatus :: [String] -> Status Int
 processStatus = countStatus . fmap extractMiniStatus
 

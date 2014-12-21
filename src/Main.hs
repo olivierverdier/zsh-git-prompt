@@ -3,7 +3,7 @@ import System.Exit (ExitCode(ExitSuccess))
 import Control.Applicative ((<$>))
 import Data.Maybe (fromMaybe)
 import BranchParse (Branch, BranchInfo, branchInfo, noBranchInfo)
-import StatusParse (StatusT(StatusC), processStatus)
+import StatusParse (Status(MakeStatus), processStatus)
 
 {- Type aliases -}
 
@@ -15,12 +15,12 @@ type Numbers = [String]
 processBranch :: String -> BranchInfo
 processBranch = either (const noBranchInfo) id . branchInfo . drop 3
 
-processGitStatus :: [String] -> (BranchInfo, StatusT Int)
+processGitStatus :: [String] -> (BranchInfo, Status Int)
 processGitStatus [] = undefined
 processGitStatus (branchLine:statusLines) = (processBranch branchLine, processStatus statusLines)
 
-allInfo :: (BranchInfo, StatusT Int) -> (Maybe Branch, Numbers)
-allInfo (((branch, _), behead), StatusC s x c t) = (branch , fmap show [ahead, behind, s, x, c, t])
+allInfo :: (BranchInfo, Status Int) -> (Maybe Branch, Numbers)
+allInfo (((branch, _), behead), MakeStatus s x c t) = (branch , fmap show [ahead, behind, s, x, c, t])
 	where
 		(ahead, behind) = fromMaybe (0,0) behead
 
