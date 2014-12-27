@@ -1,8 +1,8 @@
 import System.Process (readProcessWithExitCode)
 import System.Exit (ExitCode(ExitSuccess))
-import Control.Applicative ((<$>))
 import Data.Maybe (fromMaybe)
-import BranchParse (Branch, BranchInfo, branchInfo, noBranchInfo)
+import Control.Applicative ((<$>), (<*>))
+import BranchParse (Branch, BranchInfo, branchInfo, AheadBehind)
 import StatusParse (Status(MakeStatus), processStatus)
 
 {- Type aliases -}
@@ -12,15 +12,21 @@ type Numbers = [String]
 
 {- Combining branch and status parsing -}
 
-processBranch :: String -> BranchInfo
-processBranch = either (const noBranchInfo) id . branchInfo . drop 3
+rightOrNothing :: Either a b -> Maybe b
+rightOrNothing = either (const Nothing) Just
 
-processGitStatus :: [String] -> (BranchInfo, Status Int)
-processGitStatus [] = undefined
-processGitStatus (branchLine:statusLines) = (processBranch branchLine, processStatus statusLines)
+processBranch :: String -> Maybe BranchInfo
+processBranch = rightOrNothing . branchInfo . drop 3
 
-allInfo :: (BranchInfo, Status Int) -> (Maybe Branch, Numbers)
-allInfo (((branch, _), behead), MakeStatus s x c t) = (branch , fmap show [ahead, behind, s, x, c, t])
+processGitStatus :: [String] -> Maybe (BranchInfo, Status Int)
+processGitStatus [] = Nothing
+processGitStatus (branchLine:statusLines) = (,) <$> (processBranch branchLine) <*> (processStatus statusLines)
+
+showStatusNumbers :: Status Int -> Numbers
+showStatusNumbers (MakeStatus s x c t) = show <$> [s, x, c, t]
+
+showBranchNumbers :: Maybe AheadBehind -> Numbers
+showBranchNumbers behead = show <$> [ahead, behind]
 	where
 		(ahead, behind) = fromMaybe (0,0) behead
 
@@ -57,15 +63,16 @@ printBranch branch =
 printNumbers :: Numbers -> IO ()
 printNumbers = mapM_ putStrLn
 
+allInfo :: (BranchInfo, Status Int) -> (Maybe Branch, Numbers)
+allInfo (((branch, _), behead), stat) = (branch, showBranchNumbers behead ++ showStatusNumbers stat)
 
 printAll :: Maybe String -> IO ()
-printAll status = 
-	case fmap (allInfo . processGitStatus . lines) status of
+printAll gitStatus =
+	case fmap allInfo . processGitStatus . lines =<< gitStatus of
 		Nothing -> return ()
 		Just (branch,numbers) -> printBranch branch >> printNumbers numbers
-	-- maybe (return ()) (\(b,n) -> printBranch b >> printNumbers n) $ fmap (allInfo . processGitStatus . lines) status
 
--- main
+{- main -}
 
 main :: IO ()
 main = gitstatus >>= printAll

@@ -39,11 +39,11 @@ countStatus l = MakeStatus
 	untracked=countByType isUntracked l
 	}
 
-extractMiniStatus :: String -> MiniStatus
-extractMiniStatus [] = undefined
-extractMiniStatus [_] = undefined
-extractMiniStatus (index:work:_) = (index,work)
+extractMiniStatus :: String -> Maybe MiniStatus
+extractMiniStatus [] = Nothing
+extractMiniStatus [_] = Nothing
+extractMiniStatus (index:work:_) = Just (index,work)
 
-processStatus :: [String] -> Status Int
-processStatus = countStatus . fmap extractMiniStatus
+processStatus :: [String] -> Maybe (Status Int)
+processStatus = fmap countStatus . sequence . fmap extractMiniStatus
 
