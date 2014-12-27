@@ -1,4 +1,4 @@
-module StatusParse (processStatus, Status(MakeStatus, staged, conflict, changed, untracked)) where
+module StatusParse where
 
 {- Full status information -}
 data Status a = MakeStatus {

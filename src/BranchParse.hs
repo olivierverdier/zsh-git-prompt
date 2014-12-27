@@ -1,4 +1,4 @@
-module BranchParse (branchInfo, BranchInfo, noBranchInfo, Branch) where
+module BranchParse where
 
 import Control.Applicative ((<$>), (<*>), (<*), (*>), (<$))
 import Text.Parsec (digit, string, char, eof, anyChar, 
