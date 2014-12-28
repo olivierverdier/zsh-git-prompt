@@ -36,12 +36,12 @@ makeHash = (':' :) . maybe "" init
 
 {- Git commands -}
 
-maybeResult :: (ExitCode, a, b) -> Maybe a
-maybeResult (exitCode, output, _) = 
+successOrNothing :: (ExitCode, a, b) -> Maybe a
+successOrNothing (exitCode, output, _) =
 	if exitCode == ExitSuccess then Just output else Nothing
 
 safeRun :: String -> [String] -> IO (Maybe String)
-safeRun command arguments = maybeResult <$> readProcessWithExitCode command arguments ""
+safeRun command arguments = successOrNothing <$> readProcessWithExitCode command arguments ""
 
 gitstatus :: IO (Maybe String)
 gitstatus =   safeRun "git" ["status", "--porcelain", "--branch"]
