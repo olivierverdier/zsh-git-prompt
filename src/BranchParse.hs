@@ -31,7 +31,7 @@ newRepo =
 noBranch :: Parser BranchInfo
 noBranch = 
 	noBranchInfo
-		<$ many (noneOf "(") <* string "(no branch)" <* eof
+		<$ manyTill anyChar (try $ string " (no branch)") <* eof
 
 trackedBranch :: Parser Branch
 trackedBranch = manyTill anyChar (try $ string "...")
