@@ -28,10 +28,10 @@ showStatusNumbers (MakeStatus s x c t) = show <$> [s, x, c, t]
 showBranchNumbers :: Maybe AheadBehind -> Numbers
 showBranchNumbers behead = show <$> [ahead, behind]
 	where
-		(ahead, behind) = fromMaybe (0,0) behead
 
 makeHash :: Maybe Hash -> String
 makeHash = (':' :) . maybe "" init 
+		(ahead, behind) = fromMaybe (0,0) behead -- the script needs some value, (0,0) means no display
 
 
 {- Git commands -}
