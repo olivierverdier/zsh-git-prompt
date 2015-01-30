@@ -4,6 +4,7 @@ import Data.Maybe (fromMaybe)
 import Control.Applicative ((<$>), (<*>))
 import BranchParse (Branch, BranchInfo, branchInfo, AheadBehind)
 import StatusParse (Status(MakeStatus), processStatus)
+import Data.List (intercalate)
 
 {- Type aliases -}
 
@@ -28,11 +29,14 @@ showStatusNumbers (MakeStatus s x c t) = show <$> [s, x, c, t]
 showBranchNumbers :: Maybe AheadBehind -> Numbers
 showBranchNumbers behead = show <$> [ahead, behind]
 	where
-
-makeHash :: Maybe Hash -> String
-makeHash = (':' :) . maybe "" init 
 		(ahead, behind) = fromMaybe (0,0) behead -- the script needs some value, (0,0) means no display
 
+makeHashWith :: Char -- prefix to hashes
+				-> Maybe Hash
+				-> String
+makeHashWith _ Nothing = "" -- some error in gitrevparse
+makeHashWith _ (Just "") = "" -- hash too short
+makeHashWith c (Just hash) = c : (init hash)
 
 {- Git commands -}
 
@@ -51,28 +55,32 @@ gitrevparse = safeRun "git" ["rev-parse", "--short", "HEAD"]
 
 {- IO -}
 
-printHash :: IO ()
-printHash = putStrLn . makeHash =<< gitrevparse
-
-printBranch :: Maybe Branch -> IO ()
-printBranch branch =
+branchOrHash :: Maybe Branch -> IO String
+branchOrHash branch =
 	case branch of
-		Nothing -> printHash
-		Just bn -> putStrLn bn
+		Nothing -> makeHashWith ':' <$> gitrevparse
+		Just bn -> return bn
 
-printNumbers :: Numbers -> IO ()
-printNumbers = mapM_ putStrLn
+allInfo :: (BranchInfo, Status Int) -> (IO String, Numbers)
+allInfo (((branch, _), behead), stat) = (branchOrHash branch, showBranchNumbers behead ++ showStatusNumbers stat)
 
-allInfo :: (BranchInfo, Status Int) -> (Maybe Branch, Numbers)
-allInfo (((branch, _), behead), stat) = (branch, showBranchNumbers behead ++ showStatusNumbers stat)
+ioStrings :: (IO String, Numbers) -> IO [String]
+ioStrings (ios,ss) = (: ss) <$> ios
 
-printAll :: Maybe String -> IO ()
-printAll gitStatus =
-	case fmap allInfo . processGitStatus . lines =<< gitStatus of
-		Nothing -> return ()
-		Just (branch,numbers) -> printBranch branch >> printNumbers numbers
+stringsFromStatus :: String -> Maybe (IO [String])
+stringsFromStatus = fmap  (ioStrings .  allInfo) . processGitStatus . lines
+
+makeStringWith :: String -- string to intercalate with
+				-> Maybe (IO [String])
+				-> IO String
+makeStringWith _ Nothing = return "" -- some parsing error
+makeStringWith s (Just ios) = (intercalate s) <$> ios
+
+stringFromStatus :: Maybe String -> IO String
+stringFromStatus Nothing = return "" -- error in gitstatus
+stringFromStatus (Just s) = makeStringWith "\n" . stringsFromStatus $ s
 
 {- main -}
 
 main :: IO ()
-main = gitstatus >>= printAll
+main = putStrLn =<< stringFromStatus =<< gitstatus
