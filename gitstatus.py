@@ -52,7 +52,7 @@ else:
 		ahead = len([x for x in behead if x[0]=='>'])
 		behind = len(behead) - ahead
 
-out = '\n'.join([
+out = ' '.join([
 	branch,
 	str(ahead),
 	str(behind),

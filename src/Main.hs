@@ -78,7 +78,7 @@ makeStringWith s (Just ios) = (intercalate s) <$> ios
 
 stringFromStatus :: Maybe String -> IO String
 stringFromStatus Nothing = return "" -- error in gitstatus
-stringFromStatus (Just s) = makeStringWith "\n" . stringsFromStatus $ s
+stringFromStatus (Just s) = makeStringWith " " . stringsFromStatus $ s
 
 {- main -}
 

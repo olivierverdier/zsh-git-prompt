@@ -51,7 +51,7 @@ function update_current_git_vars() {
         local gitstatus="$__GIT_PROMPT_DIR/dist/build/gitstatus/gitstatus"
         _GIT_STATUS=`${gitstatus}`
     fi
-    __CURRENT_GIT_STATUS=("${(@f)_GIT_STATUS}")
+     __CURRENT_GIT_STATUS=("${(@s: :)_GIT_STATUS}")
 	GIT_BRANCH=$__CURRENT_GIT_STATUS[1]
 	GIT_AHEAD=$__CURRENT_GIT_STATUS[2]
 	GIT_BEHIND=$__CURRENT_GIT_STATUS[3]
