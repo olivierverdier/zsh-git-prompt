@@ -1,4 +1,4 @@
-import BranchParse (BranchInfo, branchInfo, Distance, Branch(MkBranch))
+import BranchParse (BranchInfo(MkBranchInfo), branchInfo, Distance, Branch(MkBranch), noBranchInfo)
 import Test.QuickCheck (property, stdArgs, maxSuccess, quickCheckWith)
 
 
@@ -16,31 +16,31 @@ checkRight b s = expectRight b $ branchInfo s
 propNoBranch :: Branch -> Bool
 propNoBranch (MkBranch s) =
 		checkRight
-			((Nothing, Nothing), Nothing)
+			noBranchInfo
 			$ s ++ " (no branch)"
 
 propNewRepo :: Branch -> Bool
 propNewRepo b@(MkBranch s) =
 		checkRight 
-			((Just b, Nothing), Nothing)
+			(MkBranchInfo (Just b) Nothing Nothing)
 			$ "Initial commit on " ++ s
 
 propBranchOnly :: Branch -> Bool
 propBranchOnly b@(MkBranch s) = 
 		checkRight 
-			((Just b, Nothing), Nothing)
+			(MkBranchInfo (Just b) Nothing Nothing)
 			s
 
 propBranchRemote :: Branch -> Branch -> Bool
 propBranchRemote b'@(MkBranch b) t'@(MkBranch t) =
 		checkRight
-			((Just b', Just t'), Nothing)
+			(MkBranchInfo (Just b') (Just t') Nothing)
 			$ b ++"..." ++ t 
 
 propBranchRemoteTracking :: Branch -> Branch -> Distance -> Bool
 propBranchRemoteTracking b'@(MkBranch b) t'@(MkBranch t) distance = 
 		checkRight 
-			((Just b', Just t'), Just distance)
+			(MkBranchInfo (Just b') (Just t') (Just distance))
 		 	$ b ++ "..." ++ t ++ " " ++ show distance
 
 main :: IO()

@@ -2,7 +2,7 @@ import System.Process (readProcessWithExitCode)
 import System.Exit (ExitCode(ExitSuccess))
 import Data.Maybe (fromMaybe)
 import Control.Applicative ((<$>), (<*>))
-import BranchParse (Branch(MkBranch), BranchInfo, branchInfo, Distance, pairFromDistance)
+import BranchParse (Branch(MkBranch), BranchInfo(MkBranchInfo), branchInfo, Distance, pairFromDistance)
 import StatusParse (Status(MakeStatus), processStatus)
 import Data.List (intercalate)
 
@@ -63,7 +63,7 @@ branchOrHash branch =
 		Just (MkBranch bn) -> return bn
 
 allInfo :: (BranchInfo, Status Int) -> (IO String, Numbers)
-allInfo (((branch, _), behead), stat) = (branchOrHash branch, showBranchNumbers behead ++ showStatusNumbers stat)
+allInfo ((MkBranchInfo branch _ behead), stat) = (branchOrHash branch, showBranchNumbers behead ++ showStatusNumbers stat)
 
 ioStrings :: (IO String, Numbers) -> IO [String]
 ioStrings (ios,ss) = (: ss) <$> ios

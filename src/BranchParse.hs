@@ -49,14 +49,14 @@ instance Arbitrary Branch where
 	arbitrary = MkBranch <$> arbitrary `suchThat` isValidBranch
 
 
-type BranchInfo = ((Maybe Branch, Maybe Branch), Maybe Distance)
+data BranchInfo = MkBranchInfo (Maybe Branch) (Maybe Branch) (Maybe Distance) deriving (Eq, Show)
 
 noBranchInfo :: BranchInfo
-noBranchInfo = ((Nothing, Nothing), Nothing)
+noBranchInfo = MkBranchInfo Nothing Nothing Nothing
 
 newRepo :: Parser BranchInfo
 newRepo = 
-	fmap (\ branch -> ((Just $ MkBranch branch, Nothing), Nothing))
+	fmap (\ branch -> MkBranchInfo (Just $ MkBranch branch) Nothing Nothing)
 		$ string "Initial commit on " *> many anyChar <* eof
 
 noBranch :: Parser BranchInfo
@@ -69,20 +69,20 @@ trackedBranch = MkBranch <$> manyTill anyChar (try $ string "...")
 
 branchRemoteTracking :: Parser BranchInfo
 branchRemoteTracking = 
-	(\ branch tracking behead -> ((Just branch, Just $ MkBranch tracking), Just behead))
+	(\ branch tracking behead -> MkBranchInfo (Just branch) (Just $ MkBranch tracking) (Just behead))
 		<$> trackedBranch
 		<*> many (noneOf " ") <* char ' '
 		<*> inBrackets
 
 branchRemote :: Parser BranchInfo
 branchRemote = 
-	(\ branch tracking -> ((Just branch, Just $ MkBranch tracking), Nothing))
+	(\ branch tracking -> MkBranchInfo (Just branch) (Just $ MkBranch tracking) Nothing)
 		<$> trackedBranch
 		<*> many (noneOf " ") <* eof
 
 branchOnly :: Parser BranchInfo
 branchOnly = 
-	(\ branch -> ((Just $ MkBranch branch, Nothing), Nothing))
+	(\ branch -> MkBranchInfo (Just $ MkBranch branch) Nothing Nothing)
 		<$> many (noneOf " ") <* eof
 
 branchParser :: Parser BranchInfo
