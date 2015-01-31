@@ -2,7 +2,7 @@ import System.Process (readProcessWithExitCode)
 import System.Exit (ExitCode(ExitSuccess))
 import Data.Maybe (fromMaybe)
 import Control.Applicative ((<$>), (<*>))
-import BranchParse (Branch, BranchInfo, branchInfo, AheadBehind)
+import BranchParse (Branch, BranchInfo, branchInfo, Distance, pairFromDistance)
 import StatusParse (Status(MakeStatus), processStatus)
 import Data.List (intercalate)
 
@@ -26,10 +26,11 @@ processGitStatus (branchLine:statusLines) = (,) <$> processBranch branchLine <*>
 showStatusNumbers :: Status Int -> Numbers
 showStatusNumbers (MakeStatus s x c t) = show <$> [s, x, c, t]
 
-showBranchNumbers :: Maybe AheadBehind -> Numbers
-showBranchNumbers behead = show <$> [ahead, behind]
+
+showBranchNumbers :: Maybe Distance -> Numbers
+showBranchNumbers distance = show <$> [ahead, behind]
 	where
-		(ahead, behind) = fromMaybe (0,0) behead -- the script needs some value, (0,0) means no display
+		(ahead, behind) = fromMaybe (0,0) $ pairFromDistance <$> distance -- the script needs some value, (0,0) means no display
 
 makeHashWith :: Char -- prefix to hashes
 				-> Maybe Hash

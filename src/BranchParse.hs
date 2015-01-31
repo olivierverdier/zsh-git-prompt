@@ -5,6 +5,7 @@ import Text.Parsec (digit, string, char, eof, anyChar,
 				   many, many1, manyTill, noneOf, between,
 				   parse, ParseError, (<|>), try)
 import Text.Parsec.String (Parser)
+import Test.QuickCheck (Arbitrary(arbitrary), oneof, getPositive)
 
 {-
  The idea is to parse the first line of the git status command.
@@ -16,9 +17,23 @@ or
  	## master...origin/master [ahead 3, behind 4]
  -}
 
-type AheadBehind = (Int, Int)
+data Distance = Ahead Int | Behind Int | AheadBehind Int Int deriving (Eq)
+
+instance Show Distance where
+	show (Ahead i) = "[ahead " ++ show i ++ "]"
+	show (Behind i) = "[behind " ++ show i ++ "]"
+	show (AheadBehind i j) ="[ahead " ++ show i ++ ", behind " ++ show j ++ "]"
+
+instance Arbitrary Distance where
+	arbitrary = oneof [
+				   Ahead <$> pos,
+				   Behind <$> pos,
+				   AheadBehind <$> pos <*> pos]
+		where
+			pos = getPositive <$> arbitrary
+
 type Branch = String
-type BranchInfo = ((Maybe Branch, Maybe Branch), Maybe AheadBehind)
+type BranchInfo = ((Maybe Branch, Maybe Branch), Maybe Distance)
 
 noBranchInfo :: BranchInfo
 noBranchInfo = ((Nothing, Nothing), Nothing)
@@ -63,23 +78,28 @@ branchParser =
 		<|> branchOnly
 
 
-inBrackets :: Parser AheadBehind
+inBrackets :: Parser Distance
 inBrackets = between (char '[') (char ']') (behind <|> try aheadBehind <|> ahead)
 
-makeAheadBehind :: String -> (Int -> AheadBehind) -> Parser AheadBehind
+makeAheadBehind :: String -> (Int -> Distance) -> Parser Distance
 makeAheadBehind name constructor = 
 	constructor . read <$> (string (name ++ " ") *> many1 digit)
 
-ahead :: Parser AheadBehind
-ahead = makeAheadBehind "ahead" (\ n -> (n,0))
-behind :: Parser AheadBehind
-behind = makeAheadBehind "behind" (\ n -> (0,n))
-aheadBehind :: Parser AheadBehind
+ahead :: Parser Distance
+ahead = makeAheadBehind "ahead" Ahead
+behind :: Parser Distance
+behind = makeAheadBehind "behind" Behind
+aheadBehind :: Parser Distance
 aheadBehind =
-	(\ (aheadBy,_) (_,behindBy) -> (aheadBy, behindBy))
+	(\ (Ahead aheadBy) (Behind behindBy) -> AheadBehind aheadBy behindBy)
 		<$> ahead
 		<* string ", "
 		<*> behind
 
 branchInfo :: String -> Either ParseError BranchInfo
 branchInfo = parse branchParser ""
+
+pairFromDistance :: Distance -> (Int, Int)
+pairFromDistance (Ahead n) = (n,0)
+pairFromDistance (Behind n) = (0,n)
+pairFromDistance (AheadBehind m n) = (m,n)

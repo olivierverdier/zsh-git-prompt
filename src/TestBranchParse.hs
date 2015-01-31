@@ -1,5 +1,5 @@
-import BranchParse (BranchInfo, branchInfo, AheadBehind)
-import Test.QuickCheck (Arbitrary(arbitrary), property, stdArgs, maxSuccess, quickCheckWith, suchThat, oneof, getPositive)
+import BranchParse (BranchInfo, branchInfo, Distance)
+import Test.QuickCheck (Arbitrary(arbitrary), property, stdArgs, maxSuccess, quickCheckWith, suchThat)
 import Data.List (isPrefixOf, isSuffixOf, isInfixOf)
 import Control.Applicative ((<$>), (<*>), pure)
 
@@ -18,28 +18,6 @@ isValidBranch b = not . or $ [null,
 instance Arbitrary ValidBranch where
 	arbitrary = MkBranch <$> arbitrary `suchThat` isValidBranch
 
-{- ahead/behind information -}
-
-data BeHead = Ahead Int | Behind Int | AheadBehind Int Int deriving (Eq)
-
-instance Show BeHead where
-	show (Ahead i) = "[ahead " ++ show i ++ "]"
-	show (Behind i) = "[behind " ++ show i ++ "]"
-	show (AheadBehind i j) ="[ahead " ++ show i ++ ", behind " ++ show j ++ "]"
-
-instance Arbitrary BeHead where
-	arbitrary = oneof [
-				   Ahead <$> pos,
-				   Behind <$> pos,
-				   AheadBehind <$> pos <*> pos]
-		where
-			pos = getPositive <$> arbitrary
-
-expectedAheadBehind :: BeHead -> AheadBehind
-expectedAheadBehind behead = case behead of
-	Ahead i -> (i,0)
-	Behind j -> (0,j)
-	AheadBehind i j -> (i,j)
 
 {- Helper to tackle the Either type -}
 
@@ -76,11 +54,11 @@ propBranchRemote (MkBranch b) (MkBranch t) =
 			((Just b, Just t), Nothing)
 			$ b ++"..." ++ t 
 
-propBranchRemoteTracking :: ValidBranch -> ValidBranch -> BeHead -> Bool
-propBranchRemoteTracking (MkBranch b) (MkBranch t) behead = 
+propBranchRemoteTracking :: ValidBranch -> ValidBranch -> Distance -> Bool
+propBranchRemoteTracking (MkBranch b) (MkBranch t) distance = 
 		checkRight 
-			((Just b, Just t), Just $ expectedAheadBehind behead)
-		 	$ b ++ "..." ++ t ++ " " ++ show behead
+			((Just b, Just t), Just distance)
+		 	$ b ++ "..." ++ t ++ " " ++ show distance
 
 main :: IO()
 main = mapM_ (quickCheckWith stdArgs { maxSuccess = 2^8 }) [
