@@ -35,7 +35,10 @@ instance Arbitrary Distance where
 
 {- Branch type -}
 
-newtype Branch = MkBranch String deriving (Show, Eq)
+newtype Branch = MkBranch String deriving (Eq)
+
+instance Show Branch where
+		show (MkBranch b) = b
 
 isValidBranch :: String -> Bool
 isValidBranch b = not . or $ [null,
