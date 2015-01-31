@@ -21,7 +21,7 @@ processBranch = rightOrNothing . branchInfo . drop 3
 
 processGitStatus :: [String] -> Maybe (BranchInfo, Status Int)
 processGitStatus [] = Nothing
-processGitStatus (branchLine:statusLines) = (,) <$> (processBranch branchLine) <*> (processStatus statusLines)
+processGitStatus (branchLine:statusLines) = (,) <$> processBranch branchLine <*> processStatus statusLines
 
 showStatusNumbers :: Status Int -> Numbers
 showStatusNumbers (MakeStatus s x c t) = show <$> [s, x, c, t]
@@ -36,7 +36,7 @@ makeHashWith :: Char -- prefix to hashes
 				-> String
 makeHashWith _ Nothing = "" -- some error in gitrevparse
 makeHashWith _ (Just "") = "" -- hash too short
-makeHashWith c (Just hash) = c : (init hash)
+makeHashWith c (Just hash) = c : init hash
 
 {- Git commands -}
 
@@ -74,7 +74,7 @@ makeStringWith :: String -- string to intercalate with
 				-> Maybe (IO [String])
 				-> IO String
 makeStringWith _ Nothing = return "" -- some parsing error
-makeStringWith s (Just ios) = (intercalate s) <$> ios
+makeStringWith s (Just ios) = intercalate s <$> ios
 
 stringFromStatus :: Maybe String -> IO String
 stringFromStatus Nothing = return "" -- error in gitstatus
