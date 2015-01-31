@@ -1,22 +1,5 @@
-import BranchParse (BranchInfo, branchInfo, Distance)
-import Test.QuickCheck (Arbitrary(arbitrary), property, stdArgs, maxSuccess, quickCheckWith, suchThat)
-import Data.List (isPrefixOf, isSuffixOf, isInfixOf)
-import Control.Applicative ((<$>), (<*>), pure)
-
-{- ValidBranch type -}
-
-newtype ValidBranch = MkBranch String deriving (Show, Eq)
-
-isValidBranch :: String -> Bool
-isValidBranch b = not . or $ [null,
-							 (' ' `elem`),
-							 (".." `isInfixOf`),
-							 ("." `isPrefixOf`),
-							 ("." `isSuffixOf`)]
-							 <*> pure b
-
-instance Arbitrary ValidBranch where
-	arbitrary = MkBranch <$> arbitrary `suchThat` isValidBranch
+import BranchParse (BranchInfo, branchInfo, Distance, Branch(MkBranch))
+import Test.QuickCheck (property, stdArgs, maxSuccess, quickCheckWith)
 
 
 {- Helper to tackle the Either type -}
@@ -30,34 +13,34 @@ checkRight b s = expectRight b $ branchInfo s
 
 {- Test -}
 
-propNoBranch :: ValidBranch -> Bool
+propNoBranch :: Branch -> Bool
 propNoBranch (MkBranch s) =
 		checkRight
 			((Nothing, Nothing), Nothing)
 			$ s ++ " (no branch)"
 
-propNewRepo :: ValidBranch -> Bool
-propNewRepo (MkBranch s) =
+propNewRepo :: Branch -> Bool
+propNewRepo b@(MkBranch s) =
 		checkRight 
-			((Just s, Nothing), Nothing)
+			((Just b, Nothing), Nothing)
 			$ "Initial commit on " ++ s
 
-propBranchOnly :: ValidBranch -> Bool
-propBranchOnly (MkBranch s) = 
+propBranchOnly :: Branch -> Bool
+propBranchOnly b@(MkBranch s) = 
 		checkRight 
-			((Just s, Nothing), Nothing)
+			((Just b, Nothing), Nothing)
 			s
 
-propBranchRemote :: ValidBranch -> ValidBranch -> Bool
-propBranchRemote (MkBranch b) (MkBranch t) =
+propBranchRemote :: Branch -> Branch -> Bool
+propBranchRemote b'@(MkBranch b) t'@(MkBranch t) =
 		checkRight
-			((Just b, Just t), Nothing)
+			((Just b', Just t'), Nothing)
 			$ b ++"..." ++ t 
 
-propBranchRemoteTracking :: ValidBranch -> ValidBranch -> Distance -> Bool
-propBranchRemoteTracking (MkBranch b) (MkBranch t) distance = 
+propBranchRemoteTracking :: Branch -> Branch -> Distance -> Bool
+propBranchRemoteTracking b'@(MkBranch b) t'@(MkBranch t) distance = 
 		checkRight 
-			((Just b, Just t), Just distance)
+			((Just b', Just t'), Just distance)
 		 	$ b ++ "..." ++ t ++ " " ++ show distance
 
 main :: IO()

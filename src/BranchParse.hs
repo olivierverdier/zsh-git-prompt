@@ -1,11 +1,12 @@
 module BranchParse where
 
-import Control.Applicative ((<$>), (<*>), (<*), (*>), (<$))
+import Control.Applicative ((<$>), (<*>), (<*), (*>), (<$), pure)
 import Text.Parsec (digit, string, char, eof, anyChar, 
 				   many, many1, manyTill, noneOf, between,
 				   parse, ParseError, (<|>), try)
 import Text.Parsec.String (Parser)
-import Test.QuickCheck (Arbitrary(arbitrary), oneof, getPositive)
+import Test.QuickCheck (Arbitrary(arbitrary), oneof, getPositive, suchThat)
+import Data.List (isPrefixOf, isSuffixOf, isInfixOf)
 
 {-
  The idea is to parse the first line of the git status command.
@@ -32,7 +33,22 @@ instance Arbitrary Distance where
 		where
 			pos = getPositive <$> arbitrary
 
-type Branch = String
+{- Branch type -}
+
+newtype Branch = MkBranch String deriving (Show, Eq)
+
+isValidBranch :: String -> Bool
+isValidBranch b = not . or $ [null,
+							 (' ' `elem`),
+							 (".." `isInfixOf`),
+							 ("." `isPrefixOf`),
+							 ("." `isSuffixOf`)]
+							 <*> pure b
+
+instance Arbitrary Branch where
+	arbitrary = MkBranch <$> arbitrary `suchThat` isValidBranch
+
+
 type BranchInfo = ((Maybe Branch, Maybe Branch), Maybe Distance)
 
 noBranchInfo :: BranchInfo
@@ -40,7 +56,7 @@ noBranchInfo = ((Nothing, Nothing), Nothing)
 
 newRepo :: Parser BranchInfo
 newRepo = 
-	fmap (\ branch -> ((Just branch, Nothing), Nothing))
+	fmap (\ branch -> ((Just $ MkBranch branch, Nothing), Nothing))
 		$ string "Initial commit on " *> many anyChar <* eof
 
 noBranch :: Parser BranchInfo
@@ -49,24 +65,24 @@ noBranch =
 		<$ manyTill anyChar (try $ string " (no branch)") <* eof
 
 trackedBranch :: Parser Branch
-trackedBranch = manyTill anyChar (try $ string "...")
+trackedBranch = MkBranch <$> manyTill anyChar (try $ string "...")
 
 branchRemoteTracking :: Parser BranchInfo
 branchRemoteTracking = 
-	(\ branch tracking behead -> ((Just branch, Just tracking), Just behead))
+	(\ branch tracking behead -> ((Just branch, Just $ MkBranch tracking), Just behead))
 		<$> trackedBranch
 		<*> many (noneOf " ") <* char ' '
 		<*> inBrackets
 
 branchRemote :: Parser BranchInfo
 branchRemote = 
-	(\ branch tracking -> ((Just branch, Just tracking), Nothing))
+	(\ branch tracking -> ((Just branch, Just $ MkBranch tracking), Nothing))
 		<$> trackedBranch
 		<*> many (noneOf " ") <* eof
 
 branchOnly :: Parser BranchInfo
 branchOnly = 
-	(\ branch -> ((Just branch, Nothing), Nothing))
+	(\ branch -> ((Just $ MkBranch branch, Nothing), Nothing))
 		<$> many (noneOf " ") <* eof
 
 branchParser :: Parser BranchInfo

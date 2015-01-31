@@ -2,7 +2,7 @@ import System.Process (readProcessWithExitCode)
 import System.Exit (ExitCode(ExitSuccess))
 import Data.Maybe (fromMaybe)
 import Control.Applicative ((<$>), (<*>))
-import BranchParse (Branch, BranchInfo, branchInfo, Distance, pairFromDistance)
+import BranchParse (Branch(MkBranch), BranchInfo, branchInfo, Distance, pairFromDistance)
 import StatusParse (Status(MakeStatus), processStatus)
 import Data.List (intercalate)
 
@@ -60,7 +60,7 @@ branchOrHash :: Maybe Branch -> IO String
 branchOrHash branch =
 	case branch of
 		Nothing -> makeHashWith ':' <$> gitrevparse
-		Just bn -> return bn
+		Just (MkBranch bn) -> return bn
 
 allInfo :: (BranchInfo, Status Int) -> (IO String, Numbers)
 allInfo (((branch, _), behead), stat) = (branchOrHash branch, showBranchNumbers behead ++ showStatusNumbers stat)
