@@ -30,7 +30,8 @@ showStatusNumbers (MakeStatus s x c t) = show <$> [s, x, c, t]
 showBranchNumbers :: Maybe Distance -> Numbers
 showBranchNumbers distance = show <$> [ahead, behind]
 	where
-		(ahead, behind) = fromMaybe (0,0) $ pairFromDistance <$> distance -- the script needs some value, (0,0) means no display
+		(ahead, behind) = fromMaybe (0,0)  -- the script needs some value, (0,0) means no display
+			$ pairFromDistance <$> distance
 
 makeHashWith :: Char -- prefix to hashes
 				-> Maybe Hash
