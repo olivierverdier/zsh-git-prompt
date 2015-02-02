@@ -2,9 +2,10 @@ import System.Process (readProcessWithExitCode)
 import System.Exit (ExitCode(ExitSuccess))
 import Data.Maybe (fromMaybe)
 import Control.Applicative ((<$>), (<*>))
-import BranchParse (Branch(MkBranch), BranchInfo(MkBranchInfo), branchInfo, Distance, pairFromDistance)
+import BranchParse (BranchInfo(MkBranchInfo), branchInfo, Distance, pairFromDistance)
 import StatusParse (Status(MakeStatus), processStatus)
 import Data.List (intercalate)
+import System.IO.Unsafe (unsafeInterleaveIO)
 
 {- Type aliases -}
 
@@ -55,34 +56,34 @@ gitstatus =   safeRun "git" ["status", "--porcelain", "--branch"]
 gitrevparse :: IO (Maybe Hash)
 gitrevparse = safeRun "git" ["rev-parse", "--short", "HEAD"]
 
-{- IO -}
+{- Combine status info, branch info and hash -}
 
-branchOrHash :: Maybe Branch -> IO String
-branchOrHash branch =
-	case branch of
-		Nothing -> makeHashWith ':' <$> gitrevparse
-		Just (MkBranch bn) -> return bn
+branchOrHash :: Maybe String -- Hash
+				-> Maybe String -- Branch
+				-> String
+branchOrHash _ (Just branch) = branch
+branchOrHash (Just hash) Nothing = hash
+branchOrHash Nothing _ = ""
 
-allInfo :: (BranchInfo, Status Int) -> (IO String, Numbers)
-allInfo ((MkBranchInfo branch _ behead), stat) = (branchOrHash branch, showBranchNumbers behead ++ showStatusNumbers stat)
+allStrings :: Maybe String -- hash
+			-> (BranchInfo, Status Int) 
+			-> [String]
+allStrings mhash (MkBranchInfo branch _ behead, stat) = branchOrHash mhash (show <$> branch) : (showBranchNumbers behead ++ showStatusNumbers stat)
 
-ioStrings :: (IO String, Numbers) -> IO [String]
-ioStrings (ios,ss) = (: ss) <$> ios
+stringsFromStatus :: Maybe String -- hash
+					-> String -- status
+					-> Maybe [String]
+stringsFromStatus h = fmap  (allStrings h) . processGitStatus . lines
 
-stringsFromStatus :: String -> Maybe (IO [String])
-stringsFromStatus = fmap  (ioStrings .  allInfo) . processGitStatus . lines
-
-makeStringWith :: String -- string to intercalate with
-				-> Maybe (IO [String])
-				-> IO String
-makeStringWith _ Nothing = return "" -- some parsing error
-makeStringWith s (Just ios) = intercalate s <$> ios
-
-stringFromStatus :: Maybe String -> IO String
-stringFromStatus Nothing = return "" -- error in gitstatus
-stringFromStatus (Just s) = makeStringWith " " . stringsFromStatus $ s
 
 {- main -}
 
 main :: IO ()
-main = putStrLn =<< stringFromStatus =<< gitstatus
+main = do
+	mstatus <- gitstatus
+	mhash <- unsafeInterleaveIO gitrevparse -- defer the execution until we know we need the hash
+	let result = do
+		status <- mstatus
+		strings <- stringsFromStatus mhash status
+		return $ intercalate " " strings
+	putStrLn $ fromMaybe "" result
