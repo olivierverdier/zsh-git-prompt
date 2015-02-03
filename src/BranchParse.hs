@@ -96,6 +96,8 @@ branchParser =
 		<|> try branchRemote
 		<|> branchOnly
 
+branchParser' :: Parser BranchInfo
+branchParser' = (string "## ") >> branchParser
 
 inBrackets :: Parser Distance
 inBrackets = between (char '[') (char ']') (behind <|> try aheadBehind <|> ahead)
@@ -116,7 +118,7 @@ aheadBehind =
 		<*> behind
 
 branchInfo :: String -> Either ParseError BranchInfo
-branchInfo = parse branchParser ""
+branchInfo = parse branchParser' ""
 
 pairFromDistance :: Distance -> (Int, Int)
 pairFromDistance (Ahead n) = (n,0)

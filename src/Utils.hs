@@ -16,7 +16,7 @@ rightOrNothing :: Either a b -> Maybe b
 rightOrNothing = either (const Nothing) Just
 
 processBranch :: String -> Maybe BranchInfo
-processBranch = rightOrNothing . branchInfo . drop 3
+processBranch = rightOrNothing . branchInfo
 
 processGitStatus :: [String] -> Maybe (BranchInfo, Status Int)
 processGitStatus [] = Nothing

@@ -8,7 +8,7 @@ import Control.Monad (forM, unless)
 {- Helper to tackle the Either type -}
 
 checkRight :: BranchInfo -> String -> Bool
-checkRight b s = expectRight b $ branchInfo s
+checkRight b s = expectRight b $ branchInfo $ "## " ++ s
 	where
 		expectRight expected computed = case computed of
 			Left _ -> False
