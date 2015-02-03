@@ -34,13 +34,6 @@ showBranchNumbers distance = show <$> [ahead, behind]
 		(ahead, behind) = fromMaybe (0,0)  -- the script needs some value, (0,0) means no display
 			$ pairFromDistance <$> distance
 
-makeHashWith :: Char -- prefix to hashes
-				-> Maybe Hash
-				-> String
-makeHashWith _ Nothing = "" -- some error in gitrevparse
-makeHashWith _ (Just (MkHash "")) = "" -- hash too short
-makeHashWith c (Just (MkHash hash)) = c : init hash
-
 {- Git commands -}
 
 successOrNothing :: (ExitCode, a, b) -> Maybe a
@@ -56,19 +49,19 @@ gitstatus =   safeRun "git" ["status", "--porcelain", "--branch"]
 gitrevparse :: IO (Maybe Hash)
 gitrevparse = do
 		result <- safeRun "git" ["rev-parse", "--short", "HEAD"]
-		return $ MkHash <$> result
+		return $ MkHash . init <$> result
 
 {- Combine status info, branch info and hash -}
 
-branchOrHash :: Maybe Hash -> Maybe Branch -> String
-branchOrHash _ (Just branch) = show branch
-branchOrHash (Just hash) Nothing = getHash hash
-branchOrHash Nothing _ = ""
+branchOrHashWith :: Char -> Maybe Hash -> Maybe Branch -> String
+branchOrHashWith _ _ (Just branch) = show branch
+branchOrHashWith c (Just hash) Nothing = c : getHash hash
+branchOrHashWith _ Nothing _ = ""
 
 allStrings :: Maybe Hash
 			-> (BranchInfo, Status Int) 
 			-> [String]
-allStrings mhash (MkBranchInfo branch _ behead, stat) = branchOrHash mhash branch : (showBranchNumbers behead ++ showStatusNumbers stat)
+allStrings mhash (MkBranchInfo branch _ behead, stat) = branchOrHashWith ':' mhash branch : (showBranchNumbers behead ++ showStatusNumbers stat)
 
 stringsFromStatus :: Maybe Hash
 					-> String -- status
