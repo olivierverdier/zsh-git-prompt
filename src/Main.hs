@@ -9,7 +9,7 @@ import System.IO.Unsafe (unsafeInterleaveIO)
 
 {- Type aliases -}
 
-type Hash = String
+newtype Hash = MkHash {getHash :: String}
 type Numbers = [String]
 
 {- Combining branch and status parsing -}
@@ -38,8 +38,8 @@ makeHashWith :: Char -- prefix to hashes
 				-> Maybe Hash
 				-> String
 makeHashWith _ Nothing = "" -- some error in gitrevparse
-makeHashWith _ (Just "") = "" -- hash too short
-makeHashWith c (Just hash) = c : init hash
+makeHashWith _ (Just (MkHash "")) = "" -- hash too short
+makeHashWith c (Just (MkHash hash)) = c : init hash
 
 {- Git commands -}
 
@@ -54,13 +54,15 @@ gitstatus :: IO (Maybe String)
 gitstatus =   safeRun "git" ["status", "--porcelain", "--branch"]
 
 gitrevparse :: IO (Maybe Hash)
-gitrevparse = safeRun "git" ["rev-parse", "--short", "HEAD"]
+gitrevparse = do
+		result <- safeRun "git" ["rev-parse", "--short", "HEAD"]
+		return $ MkHash <$> result
 
 {- Combine status info, branch info and hash -}
 
 branchOrHash :: Maybe Hash -> Maybe Branch -> String
 branchOrHash _ (Just branch) = show branch
-branchOrHash (Just hash) Nothing = hash
+branchOrHash (Just hash) Nothing = getHash hash
 branchOrHash Nothing _ = ""
 
 allStrings :: Maybe Hash
