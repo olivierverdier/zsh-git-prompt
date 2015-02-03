@@ -2,7 +2,7 @@ import System.Process (readProcessWithExitCode)
 import System.Exit (ExitCode(ExitSuccess))
 import Data.Maybe (fromMaybe)
 import Control.Applicative ((<$>), (<*>))
-import BranchParse (BranchInfo(MkBranchInfo), branchInfo, Distance, pairFromDistance)
+import BranchParse (Branch, BranchInfo(MkBranchInfo), branchInfo, Distance, pairFromDistance)
 import StatusParse (Status(MakeStatus), processStatus)
 import Data.List (intercalate)
 import System.IO.Unsafe (unsafeInterleaveIO)
@@ -58,19 +58,17 @@ gitrevparse = safeRun "git" ["rev-parse", "--short", "HEAD"]
 
 {- Combine status info, branch info and hash -}
 
-branchOrHash :: Maybe String -- Hash
-				-> Maybe String -- Branch
-				-> String
-branchOrHash _ (Just branch) = branch
+branchOrHash :: Maybe Hash -> Maybe Branch -> String
+branchOrHash _ (Just branch) = show branch
 branchOrHash (Just hash) Nothing = hash
 branchOrHash Nothing _ = ""
 
-allStrings :: Maybe String -- hash
+allStrings :: Maybe Hash
 			-> (BranchInfo, Status Int) 
 			-> [String]
-allStrings mhash (MkBranchInfo branch _ behead, stat) = branchOrHash mhash (show <$> branch) : (showBranchNumbers behead ++ showStatusNumbers stat)
+allStrings mhash (MkBranchInfo branch _ behead, stat) = branchOrHash mhash branch : (showBranchNumbers behead ++ showStatusNumbers stat)
 
-stringsFromStatus :: Maybe String -- hash
+stringsFromStatus :: Maybe Hash
 					-> String -- status
 					-> Maybe [String]
 stringsFromStatus h = fmap  (allStrings h) . processGitStatus . lines
