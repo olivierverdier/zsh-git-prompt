@@ -1,5 +1,8 @@
 import BranchParse (BranchInfo(MkBranchInfo), branchInfo, Distance, Branch, noBranchInfo)
-import Test.QuickCheck (property, stdArgs, maxSuccess, quickCheckWith)
+import Test.QuickCheck (property, stdArgs, maxSuccess, quickCheckWithResult, Result, Property)
+import Test.QuickCheck.Test (isSuccess)
+import System.Exit (exitFailure)
+import Control.Monad (forM, unless)
 
 
 {- Helper to tackle the Either type -}
@@ -43,11 +46,21 @@ propBranchRemoteTracking b t distance =
 			(MkBranchInfo (Just b) (Just t) (Just distance))
 		 	$ show b ++ "..." ++ show t ++ " " ++ show distance
 
-main :: IO()
-main = mapM_ (quickCheckWith stdArgs { maxSuccess = 2^8 }) [
+
+allTests :: [Property]
+allTests = [
 				property propNoBranch,
 				property propNewRepo,
 				property propBranchOnly,
 				property propBranchRemote,
-				property propBranchRemoteTracking]
+				property propBranchRemoteTracking
+				]
+
+runTests :: IO [Result]
+runTests = forM allTests $ quickCheckWithResult stdArgs { maxSuccess = 256 }
+
+main :: IO()
+main = do
+	results <- runTests
+	unless (all isSuccess results) exitFailure
 
