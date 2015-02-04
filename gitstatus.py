@@ -61,5 +61,5 @@ out = ' '.join([
 	changed,
 	untracked,
 	])
-print(out)
+print(out, end='')
 

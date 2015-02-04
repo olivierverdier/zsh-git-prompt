@@ -34,4 +34,4 @@ main = do
 		status <- mstatus
 		strings <- stringsFromStatus mhash status
 		return $ intercalate " " strings
-	putStrLn $ fromMaybe "" result
+	putStr $ fromMaybe "" result
