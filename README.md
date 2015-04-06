@@ -66,7 +66,21 @@ When the branch name starts with a colon `:`, it means it’s actually a hash, n
     # an example prompt
     PROMPT='%B%m%~%b$(git_super_status) %# '
     ```
+    
 3.  Go in a git repository and test it!
+
+
+#### Using frameworks
+
+If you're using antigen, just add the following code to your `~/.zshrc` where you're loading your other zsh plugins.
+```sh
+    source $HOME/.zsh/antigen/antigen.zsh
+    antigen bundle olivierverdier/zsh-git-prompt
+    antigen apply
+    # an example prompt
+    PROMPT='%B%m%~%b$(git_super_status) %# '
+```
+
 
 ### Haskell (optional)
 
