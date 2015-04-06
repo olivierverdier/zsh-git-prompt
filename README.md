@@ -58,11 +58,11 @@ When the branch name starts with a colon `:`, it means it’s actually a hash, n
 ## Install
 
 1.  Clone this repository somewhere on your hard drive.
-2.  Source the file `zshrc.sh` from your `~/.zshrc` config file, and
+2.  Source the file `git-prompt.plugin.zsh` from your `~/.zshrc` config file, and
     configure your prompt. So, somewhere in `~/.zshrc`, you should have:
 
     ```sh
-    source path/to/zshrc.sh
+    source path/to/git-prompt.plugin.zsh
     # an example prompt
     PROMPT='%B%m%~%b$(git_super_status) %# '
     ```
