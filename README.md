@@ -27,7 +27,7 @@ Here is how it could look like when you are behind by 1 commits, and have 1 stag
 By default, the general appearance of the prompt is:
 
 ```
-(<branch><branch tracking>|<local status>)
+(<branch> <branch tracking> <local status>)
 ```
 
 The symbols are as follows:
@@ -36,7 +36,7 @@ The symbols are as follows:
 
 |Symbol|Meaning
 |------|------|
-|<branch>|   repository clean
+|`branch`|   repository clean
 |+n |   there are `n` staged files
 |!n |   there are `n` unmerged files
 |*n |   there are `n` changed but *unstaged* files
