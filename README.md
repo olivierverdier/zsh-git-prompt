@@ -18,7 +18,7 @@ The prompt may look like the following:
 -   `(:70c2952)`: not on any branch; parent commit has hash `70c2952`;
     the repository is otherwise clean
 
-Here is how it could look like when you are behind by 1 commits, behind by 5 commits, and have 1 staged files, 2 changed but unstaged file, and 1 untracked files, on branch `master`:
+Here is how it could look like when you are behind by 1 commits, and have 1 staged files, 2 changed but unstaged file, and 1 untracked files, on branch `master`:
 
 ![mygit][]
 
