@@ -23,12 +23,14 @@ if 'fatal' in err_string:
 	sys.exit(0)
 changed_files = [namestat[0] for namestat in res.decode("utf-8").splitlines()]
 staged_files = [namestat[0] for namestat in Popen(['git','diff', '--staged','--name-status'], stdout=PIPE).communicate()[0].splitlines()]
-nb_changed = len(changed_files) - changed_files.count('U')
+nb_deleted=changed_files.count('D')
+nb_changed = changed_files.count('M')
 nb_U = staged_files.count('U')
 nb_staged = len(staged_files) - nb_U
 staged = str(nb_staged)
 conflicts = str(nb_U)
 changed = str(nb_changed)
+deleted = str(nb_deleted)
 nb_untracked = len([0 for status in Popen(['git','status','--porcelain',],stdout=PIPE).communicate()[0].decode("utf-8").splitlines() if status.startswith('??')])
 untracked = str(nb_untracked)
 
@@ -60,6 +62,7 @@ out = ' '.join([
 	conflicts,
 	changed,
 	untracked,
+	deleted
 	])
 print(out, end='')
 

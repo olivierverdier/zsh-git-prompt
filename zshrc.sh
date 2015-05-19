@@ -59,6 +59,7 @@ function update_current_git_vars() {
 	GIT_CONFLICTS=$__CURRENT_GIT_STATUS[5]
 	GIT_CHANGED=$__CURRENT_GIT_STATUS[6]
 	GIT_UNTRACKED=$__CURRENT_GIT_STATUS[7]
+	GIT_DELETED=$__CURRENT_GIT_STATUS[8]
 }
 
 
@@ -84,6 +85,9 @@ git_super_status() {
 	  if [ "$GIT_UNTRACKED" -ne "0" ]; then
 		  STATUS="$STATUS$ZSH_THEME_GIT_PROMPT_UNTRACKED$GIT_UNTRACKED%{${reset_color}%} "
 	  fi
+	  if [ "$GIT_DELETED" -ne "0" ]; then
+		  STATUS="$STATUS$ZSH_THEME_GIT_PROMPT_DELETED$GIT_DELETED%{${reset_color}%} "
+	  fi
 	  # remove end space
 	  STATUS="$(echo $STATUS | sed 's/ $//g' )"
 	  STATUS="$STATUS%{${reset_color}%}$ZSH_THEME_GIT_PROMPT_SUFFIX"
@@ -101,3 +105,4 @@ ZSH_THEME_GIT_PROMPT_CHANGED="%{$fg[blue]%}%{*%G%}"
 ZSH_THEME_GIT_PROMPT_BEHIND="%{$fg_bold[cyan]%}%{v%G%}"
 ZSH_THEME_GIT_PROMPT_AHEAD="%{$fg_bold[green]%}%{^%G%}"
 ZSH_THEME_GIT_PROMPT_UNTRACKED="%{$fg[red]%}%{?%G%}"
+ZSH_THEME_GIT_PROMPT_DELETED="%{$fg[yellow]%}%{-%G%}"
