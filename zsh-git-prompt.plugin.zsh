@@ -1,16 +1,13 @@
 export __GIT_PROMPT_DIR=${0:A:h}
-
 export GIT_PROMPT_EXECUTABLE=${GIT_PROMPT_USE_PYTHON:-"python"}
 
 # Initialize colors.
-autoload -U colors
-colors
+autoload -U colors && colors
 
 # Allow for functions in the prompt.
 setopt PROMPT_SUBST
 
 autoload -U add-zsh-hook
-
 add-zsh-hook chpwd   -chpwd-update-git-vars
 add-zsh-hook preexec -preexec-update-git-vars
 add-zsh-hook precmd  -precmd-update-git-vars
@@ -25,7 +22,7 @@ add-zsh-hook precmd  -precmd-update-git-vars
 }
 
 -precmd-update-git-vars() {
-  if [[ -n "$__EXECUTED_GIT_COMMAND" || ! -n "$ZSH_GP_CACHE" ]]; then
+  if [[ -n "$__EXECUTED_GIT_COMMAND" || -z "$ZSH_GP_CACHE" ]]; then
     -update-current-git-vars
     unset __EXECUTED_GIT_COMMAND
   fi
@@ -75,7 +72,7 @@ add-zsh-hook precmd  -precmd-update-git-vars
       STATUS="${STATUS}${ZSH_GP_BASIC_COLOR}${ZSH_GP_CHANGED}${GIT_CHANGED}%{${reset_color}%}"
     fi
     if [[ $GIT_UNTRACKED -ne 0 ]]; then
-      STATUS="${STATUS}${ZSH_GP_BASIC_COLOR}${ZSH_GP_UNTRACKED}%{${reset_color}%}"
+      STATUS="${STATUS}${ZSH_GP_BASIC_COLOR}${ZSH_GP_UNTRACKED}${GIT_UNTRACKED}%{${reset_color}%}"
     fi
     if [[ $GIT_CHANGED -eq 0 && $GIT_CONFLICTS -eq 0 && $GIT_STAGED -eq 0 && $GIT_UNTRACKED -eq 0 ]]; then
       STATUS="${STATUS}${ZSH_GP_GREEN}${ZSH_GP_CLEAN}"
@@ -93,7 +90,7 @@ ZSH_GP_BASIC_COLOR="%{$fg[red]%}%{%G%}"
 ZSH_GP_YELLOW="%{$fg_bold[yellow]%}"
 ZSH_GP_GREEN="%{$fg_bold[green]%}%{%G%}"
 ZSH_GP_STAGED="A"
-ZSH_GP_CONFLICTS=" unmerged"
+ZSH_GP_CONFLICTS="UU"
 ZSH_GP_CHANGED="M"
 ZSH_GP_AHEAD=">"
 ZSH_GP_BEHIND="<"
