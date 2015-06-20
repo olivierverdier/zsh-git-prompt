@@ -86,7 +86,7 @@ add-zsh-hook precmd  -precmd-update-git-vars
 ZSH_GP_PREFIX="("
 ZSH_GP_SUFFIX=")"
 ZSH_GP_SEPARATOR="|"
-ZSH_GP_BASIC_COLOR="%{$fg[red]%}%{%G%}"
+ZSH_GP_BASIC_COLOR="%{$fg_bold[red]%}%{%G%}"
 ZSH_GP_YELLOW="%{$fg_bold[yellow]%}"
 ZSH_GP_GREEN="%{$fg_bold[green]%}%{%G%}"
 ZSH_GP_STAGED="A"
