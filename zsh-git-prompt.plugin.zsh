@@ -19,8 +19,10 @@ add-zsh-hook precmd  -precmd-update-git-vars
 
   unset _ZSH_GP_PROMPT
 
-  local git_branch
+  local git_branch_name
   local git_status
+  local git_remote_name
+  local git_remote_diff
   local prefix="("
   local suffix=")"
   local seperator="|"
@@ -30,7 +32,7 @@ add-zsh-hook precmd  -precmd-update-git-vars
   local red="%{$fg_bold[red]%}"
   local reset="%{${reset_color}%}"
 
-  git_branch="$(git rev-parse --abbrev-ref=loose HEAD)"
+  git_branch_name="$(git rev-parse --abbrev-ref=loose HEAD 2>/dev/null)"
   git_status="$(
     git status --porcelain \
     | awk '{print $1}' \
@@ -38,11 +40,26 @@ add-zsh-hook precmd  -precmd-update-git-vars
     | awk '{printf "%s", $2$1} END {printf "\n"}'
   )"
 
-  _ZSH_GP_PROMPT="${prefix}${yellow}${git_branch}${reset}${seperator}"
-  if [[ -n "$git_status" ]]; then
-    _ZSH_GP_PROMPT="${_ZSH_GP_PROMPT}${red}${git_status}${reset}${suffix}"
-  else
+  git_remote_name="$(git config branch.${git_branch_name}.remote 2>/dev/null)"
+  if [[ -n "$git_remote_name" ]]; then
+    git_remote_diff="$(
+      git rev-list --left-right \
+        refs/remotes/${git_remote_name}/${git_branch_name}...HEAD \
+        | grep -oE '^[><]' \
+        | sort | uniq -c \
+        | awk '{printf "%s", $2$1} END {printf "\n"}'
+    )"
+  fi
+
+  _ZSH_GP_PROMPT="${prefix}${yellow}${git_branch_name}${reset}${seperator}"
+  if [[ -z "$git_status" ]]; then
     _ZSH_GP_PROMPT="${_ZSH_GP_PROMPT}${green}${clean}${reset}${suffix}"
+  else
+    _ZSH_GP_PROMPT="${_ZSH_GP_PROMPT}${red}${git_status}${reset}"
+    if [[ -n "$git_remote_diff" ]]; then
+      _ZSH_GP_PROMPT="${_ZSH_GP_PROMPT}${seperator}${red}${git_remote_diff}${reset}"
+    fi
+    _ZSH_GP_PROMPT="${_ZSH_GP_PROMPT}${suffix}"
   fi
 }
 
