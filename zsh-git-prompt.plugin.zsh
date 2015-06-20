@@ -17,8 +17,6 @@ add-zsh-hook precmd  -precmd-update-git-vars
     return 0
   fi
 
-  unset _ZSH_GP_PROMPT
-
   local git_branch_name
   local git_status
   local git_remote_name
@@ -65,6 +63,7 @@ add-zsh-hook precmd  -precmd-update-git-vars
 
 
 -git-status() {
+  unset _ZSH_GP_PROMPT
   -precmd-update-git-vars
 
   if [[ -n "$_ZSH_GP_PROMPT" ]]; then
