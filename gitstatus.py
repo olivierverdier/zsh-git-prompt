@@ -4,6 +4,7 @@ from __future__ import print_function
 # change this symbol to whatever you prefer
 prehash = ':'
 
+import subprocess
 from subprocess import Popen, PIPE
 
 import sys
@@ -18,11 +19,10 @@ if 'fatal: Not a git repository' in error_string:
 branch = branch.decode("utf-8").strip()[11:]
 
 # Get git status (staged, change, conflicts and untracked)
-res, err = Popen(['git', 'status', '--porcelain'],
-                 stdout=PIPE, stderr=PIPE).communicate()
-err_string = err.decode('utf-8')
-if 'fatal' in err_string:
-	sys.exit(0)
+try:
+    res = subprocess.check_output(['git', 'status', '--porcelain'])
+except subprocess.CalledProcessError:
+    sys.exit(0)
 status = [(st[0], st[1], st[2:]) for st in res.splitlines()]
 untracked, staged, changed, conflicts = [], [], [], []
 for st in status:
