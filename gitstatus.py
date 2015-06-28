@@ -35,10 +35,6 @@ for st in status:
             conflicts.append(st)
         elif st[0] != ' ':
             staged.append(st)
-n_staged = len(staged)
-n_changed = len(changed)
-n_conflicts = len(conflicts)
-n_untracked = len(untracked)
 
 ahead, behind = 0,0
 
@@ -64,10 +60,10 @@ out = ' '.join([
     branch,
     str(ahead),
     str(behind),
-    str(n_staged),
-    str(n_conflicts),
-    str(n_changed),
-    str(n_untracked),
+    str(len(staged)),
+    str(len(conflicts)),
+    str(len(changed)),
+    str(len(untracked)),
     ])
 print(out, end='')
 
