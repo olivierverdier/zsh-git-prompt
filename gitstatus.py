@@ -29,7 +29,7 @@ nb_staged = len(staged_files) - nb_U
 staged = str(nb_staged)
 conflicts = str(nb_U)
 changed = str(nb_changed)
-nb_untracked = len([0 for status in Popen(['git','status','--porcelain',],stdout=PIPE).communicate()[0].decode("utf-8").splitlines() if status.startswith('??')])
+nb_untracked = len([0 for status in Popen(['git','status','--porcelain','-uno'],stdout=PIPE).communicate()[0].decode("utf-8").splitlines() if status.startswith('??')])
 untracked = str(nb_untracked)
 
 ahead, behind = 0,0
