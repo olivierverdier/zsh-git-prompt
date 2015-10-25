@@ -1,1 +1,33 @@
-language: haskell
+sudo: false
+language: generic
+addons:
+  apt:
+    packages:
+      - bc
+before_script:
+  - git config --global user.email "you@example.com"
+  - git config --global user.name "Your Name"
+  - git clone https://github.com/olivierverdier/zsh-git-prompt.git /tmp/zsh-git-prompt
+  - (cd /tmp/zsh-git-prompt && git checkout 9f0da67 && cp gitstatus.py /tmp/gitstatus-bench.py && git checkout $TRAVIS_BRANCH)
+script:
+# test gitstatus.py
+  - cd /tmp/zsh-git-prompt
+  - test "$TRAVIS_BRANCH 0 0 0 0 0 0" = "$(python $TRAVIS_BUILD_DIR/gitstatus.py)"
+  - git reset --hard HEAD~1  # behind 1
+  # conflict 1, ahead 1 {{
+  - echo change-1 >> README.md && git commit -am "change-1"
+  - git branch tmp-branch
+  - git reset --hard HEAD~1
+  - echo change-2 >> README.md && git commit -am "change-2"
+  - git merge tmp-branch || true
+  # }}
+  - echo change-0 >> LICENSE.md && git add LICENSE.md  # staged 1
+  - echo change-1 >> LICENSE.md  # modify 1
+  - touch newfile  # unstaged 1
+  - git status --porcelain
+  - test "$TRAVIS_BRANCH 1 1 1 1 1 1" = "$($TRAVIS_BUILD_DIR/gitstatus.py)"
+  # test speed
+  - start=$(date +%s.%N) && /tmp/gitstatus-bench.py &>/dev/null && end=$(date +%s.%N) && gitstatus_time_bench=$(echo "$end - $start" | bc -l) && echo $gitstatus_time_bench
+  - start=$(date +%s.%N) && $TRAVIS_BUILD_DIR/gitstatus.py &>/dev/null && end=$(date +%s.%N) && gitstatus_time_latest=$(echo "$end - $start" | bc -l) && echo $gitstatus_time_latest
+  - test $(echo "$gitstatus_time_latest < $gitstatus_time_bench" | bc -l) -eq 1
+  - cd $TRAVIS_BUILD_DIR
