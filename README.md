@@ -73,7 +73,8 @@ When the branch name starts with a colon `:`, it means it’s actually a hash, n
 There is now a Haskell implementation as well, which can be four to six times faster than the Python one. The reason is not that Haskell is faster in itself (although it is), but that this implementation calls `git` only once. To install, do the following:
 
 1.  Make sure Haskell is installed on your system
-2.  Run `cabal build` from this folder
+2.  Run `cabal update` from this folder, then `cabal configure`, then 
+    `cabal build`
 3.  Define the variable `GIT_PROMPT_EXECUTABLE="haskell"` somewhere in
     your `.zshrc`
 
