@@ -1,6 +1,5 @@
 import Test.HUnit (Test(TestList), runTestTT, (~=?), Counts(errors, failures))
 import Utils (stringsFromStatus, Hash(MkHash))
-import Control.Applicative ((<$>))
 import System.Exit (exitFailure)
 import Control.Monad (when)
 
@@ -24,10 +23,10 @@ tests = [
 		]
 
 makeTest :: TestData -> Test
-makeTest (input, branch, numbers) = Just (branch : (show <$> numbers)) ~=? stringsFromStatus (Just $ MkHash "hash") input
+makeTest (input, branch, numbers) = Just (branch : (fmap show numbers)) ~=? stringsFromStatus (Just (MkHash "hash")) input
 
 main :: IO ()
-main = do
-	testResult <- runTestTT $ TestList $ makeTest <$> tests
-	let some accessor = accessor testResult /= 0
-	when (some errors  || some failures) exitFailure
+main = do -- IO
+	testResult <- (runTestTT . TestList . fmap makeTest) tests
+	let some accessor = accessor testResult /= 0 in
+		when (some errors  || some failures) exitFailure

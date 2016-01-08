@@ -1,5 +1,8 @@
 module StatusParse where
 
+import Data.Traversable (for)
+
+
 {- Full status information -}
 data Status a = MakeStatus {
 	staged :: a,
@@ -31,7 +34,7 @@ countByType :: (MiniStatus -> Bool) -> [MiniStatus] -> Int
 countByType isType = length . filter isType
 
 countStatus :: [MiniStatus] -> Status Int
-countStatus l = MakeStatus 
+countStatus l = MakeStatus
 	{
  	staged=countByType isStaged l,
 	conflict=countByType isConflict l,
@@ -42,8 +45,11 @@ countStatus l = MakeStatus
 extractMiniStatus :: String -> Maybe MiniStatus
 extractMiniStatus [] = Nothing
 extractMiniStatus [_] = Nothing
-extractMiniStatus (index:work:_) = Just $ MkMiniStatus index work
+extractMiniStatus (index:work:_) = Just (MkMiniStatus index work)
 
 processStatus :: [String] -> Maybe (Status Int)
-processStatus = fmap countStatus . sequence . fmap extractMiniStatus
+processStatus statLines =
+	do -- Maybe
+		statList <- for statLines extractMiniStatus
+		return (countStatus statList)
 
