@@ -1,0 +1,51 @@
+name:                git-prompt
+version:             0.1.0.0
+synopsis:            Informative git prompt for zsh
+description:         Please see README.md
+homepage:            http://github.com/olivierverdier/zsh-git-prompt#readme
+license:             MIT
+author:              Olivier Verdier
+maintainer:          olivier.verdier@gmail.com
+copyright:           2016 Olivier Verdier
+category:            Web
+build-type:          Simple
+-- extra-source-files:
+cabal-version:       >=1.10
+
+library
+  hs-source-dirs:      src
+  exposed-modules:     Utils, BranchParse, StatusParse
+  build-depends:       base, parsec >=3.1, process>=1.1.0.2, QuickCheck
+  default-language:    Haskell2010
+  ghc-options: -Wall -O2 -fno-warn-tabs -fno-warn-unused-do-bind
+  cc-options: -O3
+
+executable gitstatus
+  hs-source-dirs:      app
+  main-is:             Main.hs
+  ghc-options:         -threaded -rtsopts -with-rtsopts=-N
+  build-depends:       base, git-prompt, parsec >=3.1, process>=1.1.0.2, QuickCheck
+  default-language:    Haskell2010
+  ghc-options: -Wall -O2 -fno-warn-tabs -fno-warn-unused-do-bind
+  cc-options: -O3
+
+
+test-suite tests-branch
+  type:              exitcode-stdio-1.0
+  hs-source-dirs:    test
+  main-is:           TestBranchParse.hs
+  build-depends:     base, git-prompt, parsec >=3.1, process>=1.1.0.2, QuickCheck, HUnit >= 1.2
+  ghc-options: -Wall -O2 -fno-warn-tabs -fno-warn-unused-do-bind
+  default-language:  Haskell2010
+
+test-suite tests-functional
+  type:              exitcode-stdio-1.0
+  hs-source-dirs:    test
+  main-is:           TestFunctional.hs
+  build-depends:     base, git-prompt, parsec >=3.1, process>=1.1.0.2, QuickCheck, HUnit >= 1.2
+  ghc-options: -Wall -O2 -fno-warn-tabs -fno-warn-unused-do-bind
+  default-language:  Haskell2010
+
+source-repository head
+  type:     git
+  location: https://github.com/githubuser/git-prompt
