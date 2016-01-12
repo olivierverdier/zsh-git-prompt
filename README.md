@@ -74,7 +74,6 @@ There is now a Haskell implementation as well, which can be four to six times fa
 
 1.  Make sure [Haskell's stack](http://docs.haskellstack.org/en/stable/README.html#how-to-install) is installed on your system
 2.  `cd` to this folder
-2.  `cd src`
 2.  Run `stack setup` to install the Haskell compiler, if it is not already there
 3.  Run `stack build && stack install` (don't worry, the executable is only “installed” in this folder, not on your system)
 4.  Define the variable `GIT_PROMPT_EXECUTABLE="haskell"` somewhere in

@@ -5,7 +5,7 @@ resolver: lts-3.21
 
 # Local packages, usually specified by relative directory name
 packages:
-- '.'
+- 'src'
 
 # Packages to be pulled from upstream that are not in the resolver (e.g., acme-missiles-0.3)
 extra-deps: []
@@ -31,4 +31,4 @@ extra-package-dbs: []
 # extra-include-dirs: [/path/to/dir]
 # extra-lib-dirs: [/path/to/dir]
 
-local-bin-path: './.bin'
+local-bin-path: './src/.bin'
