@@ -1,7 +1,6 @@
 import System.Process (readProcessWithExitCode)
 import System.Exit (ExitCode(ExitSuccess))
 import System.IO.Unsafe (unsafeInterleaveIO)
-import Data.List (intercalate)
 
 import Utils (stringsFromStatus, Hash(MkHash))
 import Data.Maybe (fromMaybe)
@@ -26,7 +25,7 @@ gitrevparse = do -- IO
 		mresult <- safeRun "git" ["rev-parse", "--short", "HEAD"]
 		let rev = do -- Maybe
 			result <- mresult
-			return (MkHash (init (result)))
+			return (MkHash (init result))
 		return rev
 
 {- main -}
@@ -38,5 +37,5 @@ main = do -- IO
 	let result = do -- Maybe
 		status <- mstatus
 		strings <- stringsFromStatus mhash status
-		return (intercalate " " strings)
+		return (unwords strings)
 	putStr (fromMaybe "" result)
