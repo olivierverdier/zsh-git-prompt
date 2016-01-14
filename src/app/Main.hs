@@ -17,9 +17,6 @@ safeRun command arguments =
 		output <- readProcessWithExitCode command arguments ""
 		return (successOrNothing output)
 
-gitstatus :: IO (Maybe String)
-gitstatus =   safeRun "git" ["status", "--porcelain", "--branch"]
-
 gitrevparse :: IO (Maybe Hash)
 gitrevparse = do -- IO
 		mresult <- safeRun "git" ["rev-parse", "--short", "HEAD"]
@@ -32,10 +29,9 @@ gitrevparse = do -- IO
 
 main :: IO ()
 main = do -- IO
-	mstatus <- gitstatus
+	status <- getContents
 	mhash <- unsafeInterleaveIO gitrevparse -- defer the execution until we know we need the hash
 	let result = do -- Maybe
-		status <- mstatus
 		strings <- stringsFromStatus mhash status
 		return (unwords strings)
 	putStr (fromMaybe "" result)
