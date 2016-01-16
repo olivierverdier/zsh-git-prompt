@@ -12,7 +12,7 @@ successOrNothing (exitCode, output, _) =
 	if exitCode == ExitSuccess then Just output else Nothing
 
 safeRun :: String -> [String] -> IO (Maybe String)
-safeRun command arguments = 
+safeRun command arguments =
 	do -- IO
 		output <- readProcessWithExitCode command arguments ""
 		return (successOrNothing output)

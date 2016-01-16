@@ -20,20 +20,20 @@ processBranch = rightOrNothing . branchInfo
 
 processGitStatus :: [String] -> Maybe GitInfo
 processGitStatus [] = Nothing
-processGitStatus (branchLine:statusLines) = 
+processGitStatus (branchLine:statusLines) =
 		do -- Maybe
 			mbranch <- processBranch branchLine
 			status <- processStatus statusLines
 			return (MkGitInfo mbranch status)
 
 showStatusNumbers :: Status Int -> [String]
-showStatusNumbers (MakeStatus s x c t) = 
+showStatusNumbers (MakeStatus s x c t) =
 		do -- List
 			nb <- [s, x, c, t]
 			return (show nb)
 
 showRemoteNumbers :: Maybe Remote -> [String]
-showRemoteNumbers mremote = 
+showRemoteNumbers mremote =
 		do -- List
 			ab <- [ahead, behind]
 			return (show ab)
@@ -55,7 +55,7 @@ branchOrHashWith c (Just hash) Nothing = MkBranchInfo (MkBranch (c : getHash has
 branchOrHashWith _ Nothing _ = MkBranchInfo (MkBranch "") Nothing
 
 showGitInfo :: Maybe Hash
-			-> GitInfo 
+			-> GitInfo
 			-> [String]
 showGitInfo mhash (MkGitInfo bi stat) = branchInfoString ++ showStatusNumbers stat
 	where
@@ -67,5 +67,3 @@ stringsFromStatus :: Maybe Hash
 stringsFromStatus h status = do -- List
 		processed <- processGitStatus (lines status)
 		return (showGitInfo h processed)
-
-

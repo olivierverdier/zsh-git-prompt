@@ -18,7 +18,7 @@ checkRight b s = expectRight b (branchInfo ("## " ++ s))
 -- gitRep (MkBranchInfo (MkBranch branch) Nothing) = branch
 -- gitRep (MkBranchInfo (MkBranch branch) (MkRemote (Just (MkBranch rem)) Nothing)) = branch ++ "..." ++ rem
 -- gitRep (MkBranchInfo (MkBranch branch) (MkRemote (Just (MkBranch rem)) (Just dis))) = gitRep (MkBranchInfo branch $ MkRemote (Just rem) Nothing) ++ show dis
--- 
+--
 {- Test -}
 
 propNoBranch :: Branch -> Bool
@@ -29,13 +29,13 @@ propNoBranch b =
 
 propNewRepo :: Branch -> Bool
 propNewRepo b =
-		checkRight 
+		checkRight
 			(Just (MkBranchInfo b Nothing))
 			("Initial commit on " ++ show b)
 
 propBranchOnly :: Branch -> Bool
-propBranchOnly b = 
-		checkRight 
+propBranchOnly b =
+		checkRight
 			(Just (MkBranchInfo b Nothing))
 			(show b)
 
@@ -48,8 +48,8 @@ propBranchRemote b t =
 			remote = Just (MkRemote t Nothing)
 
 propBranchRemoteTracking :: Branch -> Branch -> Distance -> Bool
-propBranchRemoteTracking b t distance = 
-		checkRight 
+propBranchRemoteTracking b t distance =
+		checkRight
 			(Just (MkBranchInfo b remote))
 		 	(show b ++ "..." ++ show t ++ " " ++ show distance)
 		where
@@ -74,4 +74,3 @@ main :: IO()
 main = do -- IO
 	results <- runTests
 	unless (all isSuccess results) exitFailure
-

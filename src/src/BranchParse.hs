@@ -1,7 +1,7 @@
 module BranchParse where
 
 import Control.Applicative (liftA, liftA2)
-import Text.Parsec (digit, string, char, eof, anyChar, 
+import Text.Parsec (digit, string, char, eof, anyChar,
 				   many, many1, manyTill, noneOf, between,
 				   parse, ParseError, (<|>), try)
 import Text.Parsec.String (Parser)
@@ -48,7 +48,7 @@ isValidBranch b = not (or (isForbidden b)) where
 
 
 instance Arbitrary Branch where
-	arbitrary = 
+	arbitrary =
 		do -- Gen
 			branch <- arbitrary `suchThat` isValidBranch
 			return (MkBranch branch)
@@ -63,7 +63,7 @@ data BranchInfo = MkBranchInfo Branch (Maybe Remote) deriving (Eq, Show)
 type MBranchInfo = Maybe BranchInfo
 
 newRepo :: Parser MBranchInfo
-newRepo = 
+newRepo =
 	do -- Parsec
 		string "Initial commit on "
 		branch <- many anyChar
@@ -72,20 +72,20 @@ newRepo =
 		return (Just bi)
 
 noBranch :: Parser MBranchInfo
-noBranch = 
+noBranch =
 	do -- Parsec
 		manyTill anyChar (try (string " (no branch)"))
 		eof
 		return Nothing
 
 trackedBranch :: Parser Branch
-trackedBranch = 
+trackedBranch =
 		do -- Parsec
 			b <- manyTill anyChar (try (string "..."))
 			return (MkBranch b)
 
 branchRemoteTracking :: Parser MBranchInfo
-branchRemoteTracking = 
+branchRemoteTracking =
 	do -- Parsec
 		branch <- trackedBranch
 		tracking <- many (noneOf " ")
@@ -97,7 +97,7 @@ branchRemoteTracking =
 
 
 branchRemote :: Parser MBranchInfo
-branchRemote = 
+branchRemote =
 	do -- Parsec
 		branch <- trackedBranch
 		tracking <- many (noneOf " ")
@@ -107,7 +107,7 @@ branchRemote =
 		return (Just bi)
 
 branchOnly :: Parser MBranchInfo
-branchOnly = 
+branchOnly =
 	do -- Parsec
 		branch <- many (noneOf " ")
 		eof
@@ -115,7 +115,7 @@ branchOnly =
 		return (Just bi)
 
 branchParser :: Parser MBranchInfo
-branchParser = 
+branchParser =
 			try noBranch
 		<|> try newRepo
 		<|> try branchRemoteTracking
@@ -132,7 +132,7 @@ inBrackets :: Parser Distance
 inBrackets = between (char '[') (char ']') (behind <|> try aheadBehind <|> ahead)
 
 makeAheadBehind :: String -> (Int -> Distance) -> Parser Distance
-makeAheadBehind name constructor = 
+makeAheadBehind name constructor =
 	do -- Parsec
 		string (name ++ " ")
 		dist <- many1 digit
