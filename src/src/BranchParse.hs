@@ -66,10 +66,7 @@ newRepo :: Parser MBranchInfo
 newRepo =
 	do -- Parsec
 		string "Initial commit on "
-		branch <- many anyChar
-		eof
-		let bi = MkBranchInfo (MkBranch branch) Nothing
-		return (Just bi)
+		branchOnly
 
 noBranch :: Parser MBranchInfo
 noBranch =
