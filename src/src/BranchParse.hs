@@ -89,7 +89,7 @@ branchRemoteTracking =
 		char ' '
 		behead <- inBrackets
 		let remote = MkRemote (MkBranch tracking) (Just behead)
-	  	let bi = MkBranchInfo branch  (Just remote)
+		let bi = MkBranchInfo branch  (Just remote)
 		return (Just bi)
 
 
@@ -100,7 +100,7 @@ branchRemote =
 		tracking <- many (noneOf " ")
 		eof
 		let remote = MkRemote (MkBranch tracking) Nothing
-	  	let bi = MkBranchInfo branch (Just remote)
+		let bi = MkBranchInfo branch (Just remote)
 		return (Just bi)
 
 branchOnly :: Parser MBranchInfo
