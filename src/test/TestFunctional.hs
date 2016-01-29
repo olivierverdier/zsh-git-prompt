@@ -20,6 +20,8 @@ tests = [
 		("## master\n M\n M\n M\n??\n", "master", [0,0,0,0,3,1])
 		,
 		("## dev...o/dev [ahead 4, behind 5]\nM \n M\n??\n", "dev", [4,5,1,0,1,1])
+		,
+		("## dev...origin/master [ahead 4, behind 5]\nMM foo\n?? bar\n", "dev", [4,5,1,0,1,1])
 		]
 
 makeTest :: TestData -> Test
