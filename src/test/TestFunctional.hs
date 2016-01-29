@@ -25,7 +25,7 @@ tests = [
 		]
 
 makeTest :: TestData -> Test
-makeTest (input, branch, numbers) = Just (branch : (fmap show numbers)) ~=? stringsFromStatus (Just (MkHash "hash")) input
+makeTest (input, branch, numbers) = Just (branch : fmap show numbers) ~=? stringsFromStatus (Just (MkHash "hash")) input
 
 main :: IO ()
 main = do -- IO
