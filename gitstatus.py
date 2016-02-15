@@ -44,6 +44,7 @@ else:
 			remote_ref = merge_name
 		else:
 			remote_ref = 'refs/remotes/%s/%s' % (remote_name, merge_name[11:])
+		stashlist = Popen(['git', 'stash', 'list'],stdout=PIPE, stderr=PIPE).communicate()[0].decode("utf-8").splitlines()
 		revgit = Popen(['git', 'rev-list', '--left-right', '%s...HEAD' % remote_ref],stdout=PIPE, stderr=PIPE)
 		revlist = revgit.communicate()[0]
 		if revgit.poll(): # fallback to local
@@ -60,6 +61,7 @@ out = ' '.join([
 	conflicts,
 	changed,
 	untracked,
+	str(len(stashlist))
 	])
 print(out, end='')
 
