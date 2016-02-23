@@ -35,7 +35,12 @@ untracked = str(nb_untracked)
 ahead, behind = 0,0
 
 if not branch: # not on any branch
-	branch = prehash + Popen(['git','rev-parse','--short','HEAD'], stdout=PIPE).communicate()[0].decode("utf-8")[:-1]
+    tag, err = Popen(['git','describe','--exact-match'], stdout=PIPE, stderr=PIPE).communicate()
+    err_string = err.decode('utf-8')
+    if 'fatal' in err_string:
+        branch = prehash + Popen(['git','rev-parse','--short','HEAD'], stdout=PIPE).communicate()[0].decode("utf-8")[:-1]
+    else:
+        branch = tag.decode("utf-8").strip()
 else:
 	remote_name = Popen(['git','config','branch.%s.remote' % branch], stdout=PIPE).communicate()[0].decode("utf-8").strip()
 	if remote_name:
