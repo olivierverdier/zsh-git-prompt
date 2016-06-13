@@ -86,6 +86,7 @@ There is now a Haskell implementation as well, which can be four to six times fa
 - You may redefine the function `git_super_status` (after the `source` statement) to adapt it to your needs (to change the order in which the information is displayed).
 - Define the variable `ZSH_THEME_GIT_PROMPT_CACHE` in order to enable caching.
 - You may also change a number of variables (which name start with `ZSH_THEME_GIT_PROMPT_`) to change the appearance of the prompt.  Take a look in the file `zshrc.sh` to see how the function `git_super_status` is defined, and what variables are available.
+- You may change the value of `ZSH_THEME_GIT_PROMPT_GENERAL` variable to color `(`, `)`, and `|`. Also, use this variable to use the same color for other parts of PROMPT and git status part.
 
 **Enjoy!**
 
