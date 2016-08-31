@@ -24,7 +24,7 @@ add-zsh-hook precmd precmd_update_git_vars
 function preexec_update_git_vars() {
     case "$2" in
         git*|hub*|gh*|stg*)
-        __EXECUTED_GIT_COMMAND=1
+        typeset -g __EXECUTED_GIT_COMMAND=1
         ;;
     esac
 }
@@ -43,6 +43,7 @@ function chpwd_update_git_vars() {
 function update_current_git_vars() {
     unset __CURRENT_GIT_STATUS
 
+    local _GIT_STATUS
     if [[ "$GIT_PROMPT_EXECUTABLE" == "python" ]]; then
         local gitstatus="$__GIT_PROMPT_DIR/gitstatus.py"
         _GIT_STATUS=`python ${gitstatus} 2>/dev/null`
@@ -50,21 +51,22 @@ function update_current_git_vars() {
     if [[ "$GIT_PROMPT_EXECUTABLE" == "haskell" ]]; then
         _GIT_STATUS=`git status --porcelain --branch &> /dev/null | $__GIT_PROMPT_DIR/src/.bin/gitstatus`
     fi
-     __CURRENT_GIT_STATUS=("${(@s: :)_GIT_STATUS}")
-	GIT_BRANCH=$__CURRENT_GIT_STATUS[1]
-	GIT_AHEAD=$__CURRENT_GIT_STATUS[2]
-	GIT_BEHIND=$__CURRENT_GIT_STATUS[3]
-	GIT_STAGED=$__CURRENT_GIT_STATUS[4]
-	GIT_CONFLICTS=$__CURRENT_GIT_STATUS[5]
-	GIT_CHANGED=$__CURRENT_GIT_STATUS[6]
-	GIT_UNTRACKED=$__CURRENT_GIT_STATUS[7]
+    
+    typeset -ga __CURRENT_GIT_STATUS=("${(@s: :)_GIT_STATUS}")
+    typeset -g GIT_BRANCH=$__CURRENT_GIT_STATUS[1]
+    typeset -g GIT_AHEAD=$__CURRENT_GIT_STATUS[2]
+    typeset -g GIT_BEHIND=$__CURRENT_GIT_STATUS[3]
+    typeset -g GIT_STAGED=$__CURRENT_GIT_STATUS[4]
+    typeset -g GIT_CONFLICTS=$__CURRENT_GIT_STATUS[5]
+    typeset -g GIT_CHANGED=$__CURRENT_GIT_STATUS[6]
+    typeset -g GIT_UNTRACKED=$__CURRENT_GIT_STATUS[7]
 }
 
 
 git_super_status() {
 	precmd_update_git_vars
     if [ -n "$__CURRENT_GIT_STATUS" ]; then
-	  STATUS="$ZSH_THEME_GIT_PROMPT_PREFIX$ZSH_THEME_GIT_PROMPT_BRANCH$GIT_BRANCH%{${reset_color}%}"
+	  local STATUS="$ZSH_THEME_GIT_PROMPT_PREFIX$ZSH_THEME_GIT_PROMPT_BRANCH$GIT_BRANCH%{${reset_color}%}"
 	  if [ "$GIT_BEHIND" -ne "0" ]; then
 		  STATUS="$STATUS$ZSH_THEME_GIT_PROMPT_BEHIND$GIT_BEHIND%{${reset_color}%}"
 	  fi
