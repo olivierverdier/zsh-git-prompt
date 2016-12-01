@@ -56,7 +56,7 @@ lines = gitstatus[0].decode("utf-8").splitlines()
 
 nb_changed = len([0 for line in lines if line.startswith(" M")])
 nb_untracked = len([0 for line in lines if line.startswith("??")])
-nb_staged = len([0 for line in lines if line.startswith("M ")])
+nb_staged = len([0 for line in lines if line.startswith("M ") or line.startswith("A ")])
 nb_conflicts = len([0 for line in lines if line.startswith("UU")])
 
 staged = str(nb_staged)
