@@ -31,6 +31,8 @@ conflicts = str(nb_U)
 changed = str(nb_changed)
 nb_untracked = len([0 for status in Popen(['git','status','--porcelain',],stdout=PIPE).communicate()[0].decode("utf-8").splitlines() if status.startswith('??')])
 untracked = str(nb_untracked)
+nb_stashed = len([0 for stashed in Popen(['git','stash','list',],stdout=PIPE).communicate()[0].decode("utf-8").splitlines() if stashed.startswith('stash@')])
+stashed = str(nb_stashed)
 
 ahead, behind = 0,0
 
@@ -60,6 +62,7 @@ out = ' '.join([
 	conflicts,
 	changed,
 	untracked,
+	stashed
 	])
 print(out, end='')
 
