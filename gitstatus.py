@@ -36,15 +36,14 @@ class Command(object):
     def poll(self):
         return self.process.poll()
 
-gitsym = Command(['git', 'symbolic-ref', 'HEAD'])
-branch, error = gitsym.run(0.01)
+gitsym, error = Command(['git', 'rev-parse', '--show-toplevel', '--symbolic-full-name', 'HEAD']).run(0.01)
 
 error_string = error.decode('utf-8')
-
-
-if 'fatal: Not a git repository' in error_string or len(branch) == 0:
+if 'fatal: Not a git repository' in error_string or len(gitsym) == 0:
 	sys.exit(0)
 
+path = gitsym.split("\n")[0]
+branch = gitsym.split("\n")[1]
 branch = branch.decode("utf-8").strip()[11:]
 
 gitstatus = Command(['git','status','--porcelain',]).run()
