@@ -54,15 +54,17 @@ if 'fatal' in err_string:
 
 lines = gitstatus[0].decode("utf-8").splitlines()
 
-nb_changed = len([0 for line in lines if line.startswith(" M")])
-nb_untracked = len([0 for line in lines if line.startswith("??")])
-nb_staged = len([0 for line in lines if line.startswith("M ") or line.startswith("A ")])
-nb_conflicts = len([0 for line in lines if line.startswith("UU")])
+def count(lines, idx, char):
+    c = 0
+    for line in lines:
+        if len(line) < 2: continue
+        c += line[idx:idx+len(char)] == char
+    return c
 
-staged = str(nb_staged)
-conflicts = str(nb_conflicts)
-changed = str(nb_changed)
-untracked = str(nb_untracked)
+staged = str(count(lines, 0, "M") + count(lines, 0, "A"))
+conflicts = str(count(lines, 0, "UU"))
+changed = str(count(lines, 1, "M"))
+untracked = str(count(lines, 0, "??"))
 
 ahead, behind = 0,0
 
