@@ -45,19 +45,20 @@ function update_current_git_vars() {
 
     if [[ "$GIT_PROMPT_EXECUTABLE" == "python" ]]; then
         local gitstatus="$__GIT_PROMPT_DIR/gitstatus.py"
-        _GIT_STATUS=`python ${gitstatus} 2>/dev/null`
+        _GIT_STATUS=`python ${gitstatus} 2>/dev/null | grep status`
     fi
     if [[ "$GIT_PROMPT_EXECUTABLE" == "haskell" ]]; then
         _GIT_STATUS=`git status --porcelain --branch &> /dev/null | $__GIT_PROMPT_DIR/src/.bin/gitstatus`
     fi
      __CURRENT_GIT_STATUS=("${(@s: :)_GIT_STATUS}")
-	GIT_BRANCH=$__CURRENT_GIT_STATUS[1]
-	GIT_AHEAD=$__CURRENT_GIT_STATUS[2]
-	GIT_BEHIND=$__CURRENT_GIT_STATUS[3]
-	GIT_STAGED=$__CURRENT_GIT_STATUS[4]
-	GIT_CONFLICTS=$__CURRENT_GIT_STATUS[5]
-	GIT_CHANGED=$__CURRENT_GIT_STATUS[6]
-	GIT_UNTRACKED=$__CURRENT_GIT_STATUS[7]
+	GIT_BRANCH=$__CURRENT_GIT_STATUS[2]
+	GIT_AHEAD=$__CURRENT_GIT_STATUS[3]
+	GIT_BEHIND=$__CURRENT_GIT_STATUS[4]
+	GIT_STAGED=$__CURRENT_GIT_STATUS[5]
+	GIT_CONFLICTS=$__CURRENT_GIT_STATUS[6]
+	GIT_CHANGED=$__CURRENT_GIT_STATUS[7]
+	GIT_UNTRACKED=$__CURRENT_GIT_STATUS[8]
+
 }
 
 
