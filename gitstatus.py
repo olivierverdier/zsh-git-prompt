@@ -7,7 +7,6 @@ import traceback
 import time
 import logging
 import tempfile
-import parsegit
 
 from subprocess import Popen, PIPE, check_output, STDOUT
 from threading import Thread
@@ -21,14 +20,23 @@ sockfile = tempfile.gettempdir() + "/gitstatus-" + getpass.getuser()
 
 # change this symbol to whatever you prefer
 prehash = ':'
+maxwatch = 1000
+maxwatch_repo = 400
+watchcount = 0
 
-def get_path():
-    """path from command line or current working directory"""
-    if len(sys.argv) > 1:
-        path = sys.argv[1]
-    else:
-        path = "."
-    return os.path.abspath(path)
+def fcount(path, max=-1, accu=0):
+    accu += 1
+    for f in os.listdir(path):
+        if ".git" == f: continue
+        child = os.path.join(path, f)
+        if os.path.isdir(child):
+            accu = fcount(child, max, accu)
+        if max > 0 and accu > max:
+            return accu
+    return accu
+
+def eprint(*args, **kwargs):
+    print(*args, file=sys.stderr, **kwargs)
 
 # from http://stackoverflow.com/a/4825933/1562506
 class Command(object):
@@ -50,7 +58,8 @@ class Command(object):
 
         thread.join(timeout)
         if thread.is_alive():
-            self.process.terminate()
+            if(self.process != None):
+                self.process.terminate()
             thread.join()
         return (self.stdout, self.stderr)
 
@@ -58,25 +67,31 @@ class Command(object):
         return self.process.poll()
 
 
-
-def parse(path=get_path()):
-    print("parse " + path)
-
+def gitBase(path):
     os.chdir(path)
     gitsym, error = Command(['git', 'rev-parse', '--show-toplevel', '--symbolic-full-name', 'HEAD']).run(0.01)
 
     error_string = error.decode('utf-8')
     if 'fatal: Not a git repository' in error_string or len(gitsym) == 0:
-            sys.exit(0)
+        return None, None
 
     path = gitsym.split("\n")[0]
     branch = gitsym.split("\n")[1]
     branch = branch.decode("utf-8").strip()[11:]
 
+    return path, branch
+
+
+
+def parse(path):
+    path, branch = gitBase(path)
+    if(path == None):
+        return ""
+
     gitstatus = Command(['git','status','--porcelain',]).run()
     err_string = gitstatus[1].decode('utf-8')
     if 'fatal' in err_string:
-            sys.exit(0)
+        return ""
 
     lines = gitstatus[0].decode("utf-8").splitlines()
 
@@ -112,7 +127,7 @@ def parse(path=get_path()):
                     ahead = len([x for x in behead if x[0]=='>'])
                     behind = len(behead) - ahead
 
-    out = ' '.join([
+    out = "status " + ' '.join([
             branch,
             str(ahead),
             str(behind),
@@ -124,15 +139,17 @@ def parse(path=get_path()):
     return out
 
 
-stat = parsegit.parse()
-print("status " + str(stat), end='')
-
 
 class MyHandler(FileSystemEventHandler):
     def __init__(self, repo):
         self.repo = repo
 
     def on_modified(self, event):
+        if event.src_path.find("/.git/") >= 0 or event.src_path.endswith("/.git"):
+            return
+        print("event " + str(event))
+        print(event.src_path)
+        print("invalidate " + self.repo.path)
         self.repo.needsUpdate = True
 
 class Repo:
@@ -140,13 +157,15 @@ class Repo:
         self.path = None
         self.stat = ""
         self.needsUpdate = True
+        self.handler = None
 
     def __str__(self):
-        return str(self.path)
+        return str(self.stat)
 
     def status(self):
-        if self.needsUpdate:
-            self.stat = parsegit.parse(self.path)
+        if self.needsUpdate or (self.handler == None and self.timestamp + 2 < time.time()):
+            self.stat = parse(self.path)
+            self.timestamp = time.time()
             self.needsUpdate = False
         return self.stat
 
@@ -164,6 +183,7 @@ class Server:
         server.bind(sockfile)
         server.listen(5)
 
+        eprint("run server")
         while True:
           conn, addr = server.accept()
           while True:
@@ -177,20 +197,40 @@ class Server:
                     conn.send(str(os.getpid()))
                 if "get " == data[0:4]:
                     path = data[4:]
+                    eprint(self.repos)
                     stat = self.register(path)
-                    conn.send("status " + stat)
+                    if stat == "": stat = "fail"
+                    conn.send(stat)
+            eprint("---")
+        eprint("stopping server")
 
 
     def register(self, path):
+        global watchcount
+        eprint("registering " + path)
+        path = gitBase(path)[0]
+        if path == None or not ".git" in os.listdir(path):
+            eprint("only register git repos")
+            return ""
+
         try:
             return self.repos[path].status()
         except KeyError:
-            print("registering " + path)
             r = Repo()
             self.repos[path] = r
-            r.handler = MyHandler(r)
             r.path = path
-            self.observer.schedule(r.handler, path, recursive=True)
+
+            dircount = fcount(path, max=maxwatch_repo)
+            eprint("number of directories: " + str(dircount))
+            if dircount < maxwatch_repo and watchcount + dircount < maxwatch:
+                eprint("observe file system changes")
+                r.handler = MyHandler(r)
+                try:
+                    self.observer.schedule(r.handler, path, recursive=True)
+                    watchcount += dircount
+                except OSError as e:
+                    traceback.print_exc()
+                    r.handler = None
 
             return r.status()
 
@@ -207,25 +247,54 @@ def startServer():
     if pid > 0:
       return
 
-  except OSError, error:
-    print('Unable to fork. Error: %d (%s)' % (error.errno, error.strerror))
+    eprint("starting server")
+    server = Server()
+    server.start()
+  except OSError as error:
+    traceback.print_exc()
+    print('Unable to fork. Error: ' + str(error))
     return
-
-  server = Server()
-  server.start()
 
 
 
 def get(path):
+    conn = socket.socket( socket.AF_UNIX, socket.SOCK_STREAM )
+    eprint("connecting to " + sockfile)
     try:
-        conn = socket.socket( socket.AF_UNIX, socket.SOCK_STREAM )
         conn.connect(sockfile)
+        eprint("connected")
+    except Exception as e:
+        eprint("failed")
+        traceback.print_exc()
+        return parse(path)
 
-        conn.send("get " + path)
-        return conn.recv(1024)
-    except:
-        startServer()
-        return parsegit.parse(path)
+    conn.send("get " + path)
+    return conn.recv(1024)
 
 if __name__ == "__main__":
-    print(get(parsegit.get_path()), end='')
+    args = sys.argv[1:]
+    mode = None
+    if len(args) > 0:
+        mode = args[0]
+        args = args[1:]
+
+        if "server" == mode:
+            server = Server()
+            server.start()
+            sys.exit(0)
+
+        if "daemon" == mode:
+            startServer()
+            sys.exit(0)
+
+    if len(args) > 0:
+        path = args[0]
+    else:
+        path = "."
+    path = os.path.abspath(path)
+
+    if "count" == mode:
+        print(fcount(path, max=100))
+
+    #print("status " + parse(path), end='')
+    print(get(path), end='')
