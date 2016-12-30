@@ -169,12 +169,24 @@ class Repo:
             self.needsUpdate = False
         return self.stat
 
+
+def serverIsRunning():
+    conn = socket.socket( socket.AF_UNIX, socket.SOCK_STREAM )
+    try:
+        conn.connect(sockfile)
+        return True
+    except Exception as e:
+        return False
+
 class Server:
     def __init__(self):
         self.observer = Observer()
         self.repos = {}
 
     def start(self):
+        if serverIsRunning():
+            return
+
         self.observer.start()
         if os.path.exists( sockfile ):
           os.remove( sockfile )
@@ -191,16 +203,26 @@ class Server:
             if not data:
                 break
             else:
+                eprint("received command " + data)
                 if "done" == data:
                     break
-                if "ping" == data:
+                elif "ping" == data:
                     conn.send(str(os.getpid()))
-                if "get " == data[0:4]:
+                elif "get " == data[0:4]:
                     path = data[4:]
                     eprint(self.repos)
                     stat = self.register(path)
                     if stat == "": stat = "fail"
                     conn.send(stat)
+                elif "info" == data:
+                    reply = "size: " + str(len(self.repos)) + "\n"
+                    reply += "content: " + str(self.repos.keys())
+                    conn.send(reply)
+                elif "kill" == data:
+                    conn.send("shutting down server")
+                    sys.exit(0)
+                else:
+                    conn.send("unknown command")
             eprint("---")
         eprint("stopping server")
 
@@ -241,23 +263,61 @@ class Server:
         return ""
 
 def startServer():
-  try:
-    # Store the Fork PID
-    pid = os.fork()
-    if pid > 0:
-      return
+# https://code.activestate.com/recipes/278731/
+    if serverIsRunning():
+        return
 
-    eprint("starting server")
-    server = Server()
-    server.start()
-  except OSError as error:
-    traceback.print_exc()
-    print('Unable to fork. Error: ' + str(error))
-    return
+    if (hasattr(os, "devnull")):
+        redirect = os.devnull
+    else:
+        redirect = "/dev/null"
+
+    try:
+        # Store the Fork PID
+        pid = os.fork()
+        if pid > 0:
+          return
+
+        os.setsid()
+
+        try:
+             pid = os.fork()	# Fork a second child.
+        except OSError, e:
+             raise Exception, "%s [%d]" % (e.strerror, e.errno)
+
+        if pid > 0:
+            os._exit(0)
+
+        os.chdir("/")
+        os.umask(0)
+
+        # close file descriptors
+        import resource
+        maxfd = resource.getrlimit(resource.RLIMIT_NOFILE)[1]
+        if (maxfd == resource.RLIM_INFINITY):
+           maxfd = 1024
+
+        for fd in range(0, maxfd):
+           try:
+              os.close(fd)
+           except OSError:	# ERROR, fd wasn't open to begin with (ignored)
+              pass
+
+        # stdin to stdout and stderr
+        os.open(redirect, os.O_RDWR)
+        os.dup2(0, 1)
+        os.dup2(0, 2)
+
+        eprint("starting server")
+        server = Server()
+        server.start()
+    except OSError as error:
+        traceback.print_exc()
+        print('Unable to fork. Error: ' + str(error))
+        return
 
 
-
-def get(path):
+def request(cmd):
     conn = socket.socket( socket.AF_UNIX, socket.SOCK_STREAM )
     eprint("connecting to " + sockfile)
     try:
@@ -266,10 +326,20 @@ def get(path):
     except Exception as e:
         eprint("failed")
         traceback.print_exc()
+        return None
+
+    conn.send(cmd)
+    return conn.recv(8196)
+
+
+def get(path):
+    reply = request("get " + path)
+
+    if reply == None:
+        startServer()
         return parse(path)
 
-    conn.send("get " + path)
-    return conn.recv(1024)
+    return reply
 
 if __name__ == "__main__":
     args = sys.argv[1:]
@@ -285,6 +355,10 @@ if __name__ == "__main__":
 
         if "daemon" == mode:
             startServer()
+            sys.exit(0)
+
+        if "client" == mode:
+            print(request(" ".join(args)))
             sys.exit(0)
 
     if len(args) > 0:
