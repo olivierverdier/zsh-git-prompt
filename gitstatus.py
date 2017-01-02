@@ -20,9 +20,11 @@ sockfile = tempfile.gettempdir() + "/gitstatus-" + getpass.getuser()
 
 # change this symbol to whatever you prefer
 prehash = ':'
+useWatchdog = False
 maxwatch = 1000
 maxwatch_repo = 400
 watchcount = 0
+updateTimeout = 2
 
 def fcount(path, max=-1, accu=0):
     accu += 1
@@ -163,7 +165,7 @@ class Repo:
         return str(self.stat)
 
     def status(self):
-        if self.needsUpdate or (self.handler == None and self.timestamp + 2 < time.time()):
+        if self.needsUpdate or (self.handler == None and self.timestamp + updateTimeout < time.time()):
             self.stat = parse(self.path)
             self.timestamp = time.time()
             self.needsUpdate = False
@@ -195,6 +197,27 @@ class Server:
         server.bind(sockfile)
         server.listen(5)
 
+        commands = {}
+        commands["ping"] = lambda conn, data: conn.send(str(os.getpid()))
+        def getCommand(conn, data):
+            path = data[4:]
+            eprint(self.repos)
+            stat = self.register(path)
+            if stat == "": stat = "fail"
+            conn.send(stat)
+        commands["get"] = getCommand
+
+        def infoCommand(conn, data):
+            reply = "size: " + str(len(self.repos)) + "\n"
+            reply += "content: " + str(self.repos.keys())
+            conn.send(reply)
+        commands["info"] = infoCommand
+
+        def killCommand(conn, data):
+            conn.send("shutting down server")
+            sys.exit(0)
+        commands["kill"] = killCommand
+
         eprint("run server")
         while True:
           conn, addr = server.accept()
@@ -204,25 +227,11 @@ class Server:
                 break
             else:
                 eprint("received command " + data)
-                if "done" == data:
-                    break
-                elif "ping" == data:
-                    conn.send(str(os.getpid()))
-                elif "get " == data[0:4]:
-                    path = data[4:]
-                    eprint(self.repos)
-                    stat = self.register(path)
-                    if stat == "": stat = "fail"
-                    conn.send(stat)
-                elif "info" == data:
-                    reply = "size: " + str(len(self.repos)) + "\n"
-                    reply += "content: " + str(self.repos.keys())
-                    conn.send(reply)
-                elif "kill" == data:
-                    conn.send("shutting down server")
-                    sys.exit(0)
+                cmd = data.split(" ")[0]
+                if not cmd in commands:
+                    conn.send("unknown command, allowed: " + ", ".join(commands.keys()))
                 else:
-                    conn.send("unknown command")
+                    commands[cmd](conn, data)
             eprint("---")
         eprint("stopping server")
 
@@ -319,12 +328,12 @@ def startServer():
 
 def request(cmd):
     conn = socket.socket( socket.AF_UNIX, socket.SOCK_STREAM )
-    eprint("connecting to " + sockfile)
+    #eprint("connecting to " + sockfile)
     try:
         conn.connect(sockfile)
-        eprint("connected")
+        #eprint("connected")
     except Exception as e:
-        eprint("failed")
+        eprint("failed to connect to " + sockfile)
         traceback.print_exc()
         return None
 
