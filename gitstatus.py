@@ -29,7 +29,7 @@ updateTimeout = 2
 def fcount(path, max=-1, accu=0):
     accu += 1
     for f in os.listdir(path):
-        if ".git" == f: continue
+#        if ".git" == f: continue
         child = os.path.join(path, f)
         if os.path.isdir(child):
             accu = fcount(child, max, accu)
@@ -147,8 +147,8 @@ class MyHandler(FileSystemEventHandler):
         self.repo = repo
 
     def on_modified(self, event):
-        if event.src_path.find("/.git/") >= 0 or event.src_path.endswith("/.git"):
-            return
+        #if event.src_path.find("/.git/") >= 0 or event.src_path.endswith("/.git"):
+        #    return
         print("event " + str(event))
         print(event.src_path)
         print("invalidate " + self.repo.path)
