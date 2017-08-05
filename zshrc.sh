@@ -108,6 +108,6 @@ ZSH_THEME_GIT_PROMPT_BEHIND="%{↓%G%}"
 ZSH_THEME_GIT_PROMPT_AHEAD="%{↑%G%}"
 ZSH_THEME_GIT_PROMPT_UNTRACKED="%{…%G%}"
 ZSH_THEME_GIT_PROMPT_CLEAN="%{$fg_bold[green]%}%{✔%G%}"
-ZSH_THEME_GIT_PROMPT_STASHED="%{$fg[magenta]%}%{$%G%}"
+ZSH_THEME_GIT_PROMPT_STASHED="%{$fg[magenta]%}%{‡%G%}"
 
 
