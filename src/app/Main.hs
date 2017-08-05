@@ -2,7 +2,7 @@ import System.Process (readProcessWithExitCode)
 import System.Exit (ExitCode(ExitSuccess))
 import System.IO.Unsafe (unsafeInterleaveIO)
 
-import Utils (stringsFromStatus, Hash(MkHash))
+import Utils (stringsFromStatus, Hash(MkHash), Stash(MkStash))
 import Data.Maybe (fromMaybe)
 
 {- Git commands -}
@@ -25,13 +25,18 @@ gitrevparse = do -- IO
 			return (MkHash (init result))
 		return rev
 
+gitstashcount :: IO Stash
+gitstashcount =
+	(maybe (MkStash 0) (MkStash . length . lines)) <$> safeRun "git" ["stash", "list"]
+
 {- main -}
 
 main :: IO ()
 main = do -- IO
 	status <- getContents
+	stash <- gitstashcount
 	mhash <- unsafeInterleaveIO gitrevparse -- defer the execution until we know we need the hash
 	let result = do -- Maybe
-		strings <- stringsFromStatus mhash status
+		strings <- stringsFromStatus mhash status stash
 		return (unwords strings)
 	putStr (fromMaybe "" result)

@@ -8,7 +8,9 @@ import StatusParse (Status(MakeStatus), processStatus)
 
 newtype Hash = MkHash {getHash :: String}
 
-data GitInfo = MkGitInfo MBranchInfo (Status Int)
+newtype Stash = MkStash {getStash :: Int}
+
+data GitInfo = MkGitInfo MBranchInfo (Status Int) Stash
 
 {- Combining branch and status parsing -}
 
@@ -18,13 +20,13 @@ rightOrNothing = either (const Nothing) Just
 processBranch :: String -> Maybe MBranchInfo
 processBranch = rightOrNothing . branchInfo
 
-processGitStatus :: [String] -> Maybe GitInfo
-processGitStatus [] = Nothing
-processGitStatus (branchLine:statusLines) =
+processGitStatus :: [String] -> Stash -> Maybe GitInfo
+processGitStatus [] _ = Nothing
+processGitStatus (branchLine:statusLines) stash =
 		do -- Maybe
 			mbranch <- processBranch branchLine
 			status <- processStatus statusLines
-			return (MkGitInfo mbranch status)
+			return (MkGitInfo mbranch status stash)
 
 showStatusNumbers :: Status Int -> [String]
 showStatusNumbers (MakeStatus s x c t) =
@@ -57,13 +59,15 @@ branchOrHashWith _ Nothing _ = MkBranchInfo (MkBranch "") Nothing
 showGitInfo :: Maybe Hash
 			-> GitInfo
 			-> [String]
-showGitInfo mhash (MkGitInfo bi stat) = branchInfoString ++ showStatusNumbers stat
+showGitInfo mhash (MkGitInfo bi stat stash) =
+	branchInfoString ++ showStatusNumbers stat ++ [show (getStash stash)]
 	where
 		branchInfoString = showBranchInfo (branchOrHashWith ':' mhash bi)
 
 stringsFromStatus :: Maybe Hash
 					-> String -- status
+					-> Stash -- stash
 					-> Maybe [String]
-stringsFromStatus h status = do -- List
-		processed <- processGitStatus (lines status)
+stringsFromStatus h status stash = do -- List
+		processed <- processGitStatus (lines status) stash
 		return (showGitInfo h processed)
