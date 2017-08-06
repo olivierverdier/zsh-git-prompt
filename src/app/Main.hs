@@ -1,6 +1,7 @@
 import System.Process (readProcessWithExitCode)
 import System.Exit (ExitCode(ExitSuccess))
 import System.IO.Unsafe (unsafeInterleaveIO)
+import Control.Applicative ((<$>))
 
 import Utils (stringsFromStatus, Hash(MkHash), Stash(MkStash))
 import Data.Maybe (fromMaybe)
@@ -27,7 +28,7 @@ gitrevparse = do -- IO
 
 gitstashcount :: IO Stash
 gitstashcount =
-	(maybe (MkStash 0) (MkStash . length . lines)) <$> safeRun "git" ["stash", "list"]
+	(MkStash . maybe 0 (length . lines)) <$> safeRun "git" ["stash", "list"]
 
 {- main -}
 
