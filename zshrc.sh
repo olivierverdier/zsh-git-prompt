@@ -89,7 +89,7 @@ git_super_status() {
 	  if [ "$GIT_CHANGED" -eq "0" ] && [ "$GIT_CONFLICTS" -eq "0" ] && [ "$GIT_STAGED" -eq "0" ] && [ "$GIT_UNTRACKED" -eq "0" ]; then
 		  STATUS="$STATUS$ZSH_THEME_GIT_PROMPT_CLEAN"
 	  fi
-	  STATUS="$STATUS$z_color$ZSH_THEME_GIT_PROMPT_SUFFIX"
+	  STATUS="$STATUS$z_color$ZSH_THEME_GIT_PROMPT_SUFFIX%{${reset_color}%}"
 	  echo "$STATUS"
 	fi
 }
