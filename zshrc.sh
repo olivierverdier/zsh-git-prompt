@@ -105,4 +105,7 @@ ZSH_THEME_GIT_PROMPT_AHEAD="%{↑%G%}"
 ZSH_THEME_GIT_PROMPT_UNTRACKED="%{…%G%}"
 ZSH_THEME_GIT_PROMPT_CLEAN="%{$fg_bold[green]%}%{✔%G%}"
 
-
+# Call update_current_git_vars once on startup so the prompt is correct
+# even if the shell is started inside a git dir, rather than only being
+# correct upon first cd.
+update_current_git_vars
