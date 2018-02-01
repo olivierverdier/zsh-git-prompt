@@ -41,7 +41,7 @@ function chpwd_update_git_vars() {
 }
 
 function update_current_git_vars() {
-    unset __CURRENT_GIT_STATUS
+    local __CURRENT_GIT_STATUS
 
     if [[ "$GIT_PROMPT_EXECUTABLE" == "python" ]]; then
         local gitstatus="$__GIT_PROMPT_DIR/gitstatus.py"
@@ -58,11 +58,7 @@ function update_current_git_vars() {
 	GIT_CONFLICTS=$__CURRENT_GIT_STATUS[5]
 	GIT_CHANGED=$__CURRENT_GIT_STATUS[6]
 	GIT_UNTRACKED=$__CURRENT_GIT_STATUS[7]
-}
 
-
-git_super_status() {
-	precmd_update_git_vars
     if [ -n "$__CURRENT_GIT_STATUS" ]; then
 	  STATUS="$ZSH_THEME_GIT_PROMPT_PREFIX$ZSH_THEME_GIT_PROMPT_BRANCH$GIT_BRANCH%{${reset_color}%}"
 	  if [ "$GIT_BEHIND" -ne "0" ]; then
@@ -88,8 +84,14 @@ git_super_status() {
 		  STATUS="$STATUS$ZSH_THEME_GIT_PROMPT_CLEAN"
 	  fi
 	  STATUS="$STATUS%{${reset_color}%}$ZSH_THEME_GIT_PROMPT_SUFFIX"
-	  echo "$STATUS"
+	  ZSH_GIT_PROMPT="$STATUS"
+	else
+		ZSH_GIT_PROMPT=""
 	fi
+}
+
+git_super_status() {
+	echo "$ZSH_GIT_PROMPT"
 }
 
 # Default values for the appearance of the prompt. Configure at will.
