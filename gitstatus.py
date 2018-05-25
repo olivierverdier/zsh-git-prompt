@@ -121,7 +121,7 @@ def main():
             branch = SYM_PREHASH + run_cmd(['git', 'rev-parse', '--short', 'HEAD'])
 
         values = [str(x) for x in (branch,) + remote + compute_stats()]
-        sys.stdout.write('\n'.join(values) + '\n')
+        sys.stdout.write(' '.join(values))
         sys.stdout.flush()
     except ProcessError:
         pass

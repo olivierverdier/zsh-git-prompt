@@ -25,11 +25,10 @@ update_current_git_vars() {
 
     if [ "$GIT_PROMPT_EXECUTABLE" = "python" ]; then
         __GIT_CMD=$(ZSH_THEME_GIT_PROMPT_HASH_PREFIX=$ZSH_THEME_GIT_PROMPT_HASH_PREFIX python "$__GIT_PROMPT_DIR/gitstatus.py" 2>/dev/null)
-        __CURRENT_GIT_STATUS=("${(@f)__GIT_STATUS}")
     else
         __GIT_CMD=$(git status --porcelain --branch &> /dev/null | $__GIT_PROMPT_DIR/src/.bin/gitstatus)
-        __CURRENT_GIT_STATUS=("${(@s: :)__GIT_STATUS}")
     fi
+    __CURRENT_GIT_STATUS=("${(@s: :)__GIT_CMD}")
     unset __GIT_CMD
 
     GIT_BRANCH=$__CURRENT_GIT_STATUS[1]
