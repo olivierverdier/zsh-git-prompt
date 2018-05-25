@@ -83,10 +83,10 @@ def compute_ahead_behind(branch):
     Returns:
         (# commits behind, # commits ahead)
     """
-    remote_name = run_cmd(['git', 'config', 'branch.%s.remote' % branch])
-    if remote_name:
+    try:
+        remote_name = run_cmd(['git', 'config', 'branch.%s.remote' % branch])
         merge_name = run_cmd(['git', 'config', 'branch.%s.merge' % branch])
-    else:
+    except ProcessError:
         remote_name = u"origin"
         merge_name = u"refs/heads/%s" % branch
 
