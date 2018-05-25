@@ -87,8 +87,8 @@ def compute_ahead_behind(branch):
         remote_name = run_cmd(['git', 'config', 'branch.%s.remote' % branch])
         merge_name = run_cmd(['git', 'config', 'branch.%s.merge' % branch])
     except ProcessError:
-        remote_name = u"origin"
-        merge_name = u"refs/heads/%s" % branch
+        remote_name = "origin"
+        merge_name = "refs/heads/%s" % branch
 
     if remote_name == '.':  # local
         remote_ref = merge_name
