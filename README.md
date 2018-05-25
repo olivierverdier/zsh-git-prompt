@@ -83,7 +83,7 @@ There is now a Haskell implementation as well, which can be four to six times fa
 1.  Run `stack build && stack install` (don't worry, the executable is only “installed” in this folder, not on your system)
 1.  Define the variable `GIT_PROMPT_EXECUTABLE="haskell"` somewhere in your `.zshrc`
 
-## Customisation
+## Customization
 
 - Define the variable `ZSH_THEME_GIT_PROMPT_CACHE` in order to enable caching.
 
