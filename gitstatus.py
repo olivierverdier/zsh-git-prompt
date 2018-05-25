@@ -13,46 +13,35 @@ from subprocess import Popen, PIPE
 SYM_PREHASH = os.environ.get('ZSH_THEME_GIT_PROMPT_HASH_PREFIX', ':')
 
 
-# TODO: Delete pcmd_error, always check rcode of Popen
-#       If not 0, raise ProcessError and sys.exit/return in main.
-def pcmd(cmd):
+class ProcessError(Exception):
+    """
+    There was a problem running the command.
+    """
+    pass
+
+
+def run_cmd(cmd):
     """
     Run a simple command and return the output on complete.
-
-    Condition: Command will block until completed.
-               Use Popen for more control.
+    Command will block until completed. Use Popen for more control.
 
     Args:
         cmd: The command to run as a list of strings.
 
     Returns:
         out: unicode string of stdout
+
+    Raises:
+        ProcessError - The returncode was not 0.
     """
-    out, _ = Popen(cmd, stdout=PIPE).communicate()
-    out = out.decode('utf-8', errors='ignore').strip()
+    with open(os.devnull, 'w') as devnull:
+        proc = Popen(cmd, stdout=PIPE, stderr=devnull)
 
-    return out
+    out, _ = proc.communicate()
+    if proc.returncode:
+        raise ProcessError(proc.returncode, cmd)
 
-
-def pcmd_error(cmd):
-    """
-    Run a simple command and return the output and stderr on complete.
-
-    Condition: Command will block until completed.
-               Use Popen for more control.
-
-    Args:
-        cmd: The command to run as a list of strings.
-
-    Returns:
-        out: unicode string of stdout
-        err: unicode string of stderr
-    """
-    out, err = Popen(cmd, stdout=PIPE, stderr=PIPE).communicate()
-    out = out.decode('utf-8', errors='ignore').strip()
-    err = err.decode('utf-8', errors='ignore').strip()
-
-    return out, err
+    return out.decode('utf-8', errors='ignore').strip()
 
 
 def compute_stats():
@@ -67,21 +56,19 @@ def compute_stats():
     Returns:
         (# staged files, # conflicts, # changed, # stashed, # untracked)
     """
-    out, err = pcmd_error(['git', 'diff', '--name-status'])
-    if 'fatal' in err.lower():
-        sys.exit(0)
+    out = run_cmd(['git', 'diff', '--name-status'])
     changed_files = [line[0] for line in out.splitlines()]
 
-    out = pcmd(['git', 'diff', '--staged', '--name-status'])
+    out = run_cmd(['git', 'diff', '--staged', '--name-status'])
     staged_files = [line[0] for line in out.splitlines()]
     changed = len(changed_files) - changed_files.count('U')
     staged = len(staged_files) - staged_files.count('U')
 
-    out = pcmd(['git', 'status', '--porcelain'])
+    out = run_cmd(['git', 'status', '--porcelain'])
     untracked = len([0 for status in out.splitlines() if status.startswith('??')])
 
     conflicts = staged_files.count('U')
-    stashed = len(pcmd(['git', 'stash', 'list']).splitlines())
+    stashed = len(run_cmd(['git', 'stash', 'list']).splitlines())
 
     return staged, conflicts, changed, untracked, stashed
 
@@ -96,9 +83,9 @@ def compute_ahead_behind(branch):
     Returns:
         (# commits behind, # commits ahead)
     """
-    remote_name = pcmd(['git', 'config', 'branch.%s.remote' % branch])
+    remote_name = run_cmd(['git', 'config', 'branch.%s.remote' % branch])
     if remote_name:
-        merge_name = pcmd(['git', 'config', 'branch.%s.merge' % branch])
+        merge_name = run_cmd(['git', 'config', 'branch.%s.merge' % branch])
     else:
         remote_name = u"origin"
         merge_name = u"refs/heads/%s" % branch
@@ -111,7 +98,7 @@ def compute_ahead_behind(branch):
     revgit = Popen(['git', 'rev-list', '--left-right', '%s...HEAD' % remote_ref],
                    stdout=PIPE, stderr=PIPE)
     if revgit.poll():  # fallback to local
-        revlist = pcmd(['git', 'rev-list', '--left-right', '%s...HEAD' % merge_name])
+        revlist = run_cmd(['git', 'rev-list', '--left-right', '%s...HEAD' % merge_name])
     else:
         revlist = revgit.communicate()[0].decode("utf-8")
 
@@ -124,20 +111,20 @@ def compute_ahead_behind(branch):
 
 def main():
     """ Main entry point. """
-    out, err = pcmd_error(['git', 'symbolic-ref', 'HEAD'])
-    if 'fatal: not a git repository' in err.lower():
-        sys.exit(0)
-    branch = out[11:]
+    try:
+        branch = run_cmd(['git', 'symbolic-ref', 'HEAD'])[11:]
+        remote = 0, 0
 
-    remote = 0, 0
-    if branch:
-        remote = compute_ahead_behind(branch)
-    else:
-        branch = SYM_PREHASH + pcmd(['git', 'rev-parse', '--short', 'HEAD'])
+        if branch:
+            remote = compute_ahead_behind(branch)
+        else:
+            branch = SYM_PREHASH + run_cmd(['git', 'rev-parse', '--short', 'HEAD'])
 
-    values = [str(x) for x in (branch,) + remote + compute_stats()]
-    sys.stdout.write('\n'.join(values) + '\n')
-    sys.stdout.flush()
+        values = [str(x) for x in (branch,) + remote + compute_stats()]
+        sys.stdout.write('\n'.join(values) + '\n')
+        sys.stdout.flush()
+    except ProcessError:
+        pass
 
 
 if __name__ == "__main__":
