@@ -82,13 +82,12 @@ def compute_ahead_behind(branch):
 
     Returns:
         (# commits behind, # commits ahead)
+
+    Raises:
+        ProcessError - No tracking information set for branch.
     """
-    try:
-        remote_name = run_cmd(['git', 'config', 'branch.%s.remote' % branch])
-        merge_name = run_cmd(['git', 'config', 'branch.%s.merge' % branch])
-    except ProcessError:
-        remote_name = "origin"
-        merge_name = "refs/heads/%s" % branch
+    remote_name = run_cmd(['git', 'config', 'branch.%s.remote' % branch])
+    merge_name = run_cmd(['git', 'config', 'branch.%s.merge' % branch])
 
     if remote_name == '.':  # local
         remote_ref = merge_name
@@ -111,21 +110,24 @@ def compute_ahead_behind(branch):
 
 def main():
     """ Main entry point. """
-    try:
-        branch = run_cmd(['git', 'symbolic-ref', 'HEAD'])[11:]
-        remote = 0, 0
+    branch = run_cmd(['git', 'symbolic-ref', 'HEAD'])[11:]
+    remote = 0, 0
 
-        if branch:
+    if branch:
+        try:
             remote = compute_ahead_behind(branch)
-        else:
-            branch = SYM_PREHASH + run_cmd(['git', 'rev-parse', '--short', 'HEAD'])
+        except ProcessError:
+            pass
+    else:
+        branch = SYM_PREHASH + run_cmd(['git', 'rev-parse', '--short', 'HEAD'])
 
-        values = [str(x) for x in (branch,) + remote + compute_stats()]
-        sys.stdout.write(' '.join(values))
-        sys.stdout.flush()
-    except ProcessError:
-        pass
+    values = [str(x) for x in (branch,) + remote + compute_stats()]
+    sys.stdout.write(' '.join(values))
+    sys.stdout.flush()
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except ProcessError:
+        pass

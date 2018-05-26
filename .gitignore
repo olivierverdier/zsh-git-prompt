@@ -1,1 +1,6 @@
 src/.bin
+**/__pycache__
+.cache
+.pytest_cache/
+**/.stack-work/
+.tox/
