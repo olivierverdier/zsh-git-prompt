@@ -2,5 +2,6 @@ src/.bin
 **/__pycache__
 .cache
 .pytest_cache/
+.python-version
 **/.stack-work/
 .tox/

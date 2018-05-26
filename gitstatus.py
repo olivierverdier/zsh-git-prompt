@@ -58,16 +58,15 @@ def compute_stats():
     """
     out = run_cmd(['git', 'diff', '--name-status'])
     changed_files = [line[0] for line in out.splitlines()]
-
     out = run_cmd(['git', 'diff', '--staged', '--name-status'])
     staged_files = [line[0] for line in out.splitlines()]
+
+    conflicts = staged_files.count('U')
+    staged = len(staged_files) - conflicts
     changed = len(changed_files) - changed_files.count('U')
-    staged = len(staged_files) - staged_files.count('U')
 
     out = run_cmd(['git', 'status', '--porcelain'])
     untracked = len([0 for status in out.splitlines() if status.startswith('??')])
-
-    conflicts = staged_files.count('U')
     stashed = len(run_cmd(['git', 'stash', 'list']).splitlines())
 
     return staged, conflicts, changed, untracked, stashed
@@ -108,18 +107,31 @@ def compute_ahead_behind(branch):
     return behind, ahead
 
 
+def get_branch():
+    """
+    Determine and return the branch of the current git repository.
+    If we aren't on a branch, return the prefixed hash of the current commit.
+    """
+    proc = Popen(['git', 'symbolic-ref', 'HEAD'], stdout=PIPE, stderr=PIPE)
+    out, err = proc.communicate()
+    err = err.decode('utf-8', errors='ignore').strip()
+    if 'fatal: not a git repository' in err.lower():
+        sys.exit(0)
+
+    branch = out.decode('utf-8', errors='ignore').strip()[11:]
+    if not branch:
+        branch = SYM_PREHASH + run_cmd(['git', 'rev-parse', '--short', 'HEAD'])
+
+    return branch
+
+
 def main():
     """ Main entry point. """
-    branch = run_cmd(['git', 'symbolic-ref', 'HEAD'])[11:]
-    remote = 0, 0
-
-    if branch:
-        try:
-            remote = compute_ahead_behind(branch)
-        except ProcessError:
-            pass
-    else:
-        branch = SYM_PREHASH + run_cmd(['git', 'rev-parse', '--short', 'HEAD'])
+    branch = get_branch()
+    try:
+        remote = compute_ahead_behind(branch)
+    except ProcessError:
+        remote = 0, 0
 
     values = [str(x) for x in (branch,) + remote + compute_stats()]
     sys.stdout.write(' '.join(values))
