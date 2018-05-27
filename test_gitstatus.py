@@ -11,35 +11,13 @@ import re
 import shlex
 import shutil
 import subprocess
-import tempfile  # TODO: Use tempfile instead of fixed directory name
+import tempfile
 
 import pytest
 
 import gitstatus
 
 GIT_STATUS = os.path.join(os.path.dirname(__file__), 'gitstatus.py')
-# FIXME: tox -e py fails, py.test works???
-
-
-def decorate_test(repo_func):
-    """
-    This wrapper simply provides a mechanism to setup the test repository,
-    then call a func, then always cleanup.
-    """
-    def inner_decorator(func):
-        def wrapper():
-            try:
-                repo = repo_func()
-                next(repo)
-                func()
-            finally:
-                try:
-                    next(repo)
-                except StopIteration:
-                    pass
-
-        return wrapper
-    return inner_decorator
 
 
 def run_gitstatus():
@@ -52,6 +30,7 @@ def run_gitstatus():
     return subprocess.check_output(['python', GIT_STATUS]).decode('utf-8', errors='ignore')
 
 
+@pytest.yield_fixture(scope="function")
 def git_repo_compute_stats():
     """
     Create a fake git repo with the following properties:
@@ -62,10 +41,12 @@ def git_repo_compute_stats():
         - 1 stashed change set
     """
     cwd = os.getcwd()
-    folder = "/tmp/zsh_git"
+    folder = tempfile.mkdtemp()
     folder_up = folder + "_upstream"
     cmds = [
         "git init",
+        "git config user.email 'you@example.com'",
+        "git config user.name 'Your Name'",
         "first:A single line",
         "second:A single line",
         "third:A single line",
@@ -118,6 +99,7 @@ def git_repo_compute_stats():
         os.chdir(cwd)
 
 
+@pytest.yield_fixture(scope="function")
 def git_repo_compute_stats_only_conflicts():
     """
     Create a fake git repo with the following properties:
@@ -125,10 +107,12 @@ def git_repo_compute_stats_only_conflicts():
         - edit the same file and create a merge conflict
     """
     cwd = os.getcwd()
-    folder = "/tmp/zsh_git"
+    folder = tempfile.mkdtemp()
     folder_up = folder + "_upstream"
     cmds = [
         "git init",
+        "git config user.email 'you@example.com'",
+        "git config user.name 'Your Name'",
         "first:A single line\nsecond line\third line",
         "git add first",
         "git commit -m 'first commit'",
@@ -185,6 +169,7 @@ def git_repo_compute_stats_only_conflicts():
         os.chdir(cwd)
 
 
+@pytest.yield_fixture(scope="function")
 def git_repo_branch_on_hash():
     """
     Create a fake git repo with the following properties:
@@ -192,9 +177,11 @@ def git_repo_branch_on_hash():
         - yield when on checkout hash
     """
     cwd = os.getcwd()
-    folder = "/tmp/zsh_git"
+    folder = tempfile.mkdtemp()
     cmds = [
         "git init",
+        "git config user.email 'you@example.com'",
+        "git config user.name 'Your Name'",
         "first:A single line",
         "git add first",
         "git commit -m 'first commit'",
@@ -232,6 +219,7 @@ def git_repo_branch_on_hash():
         os.chdir(cwd)
 
 
+@pytest.yield_fixture(scope="function")
 def git_repo_branch_on_master():
     """
     Create a fake git repo with the following properties:
@@ -239,9 +227,11 @@ def git_repo_branch_on_master():
         - yield when on checkout hash
     """
     cwd = os.getcwd()
-    folder = "/tmp/zsh_git"
+    folder = tempfile.mkdtemp()
     cmds = [
         "git init",
+        "git config user.email 'you@example.com'",
+        "git config user.name 'Your Name'",
         "first:A single line",
         "git add first",
         "git commit -m 'first commit'",
@@ -278,6 +268,7 @@ def git_repo_branch_on_master():
         os.chdir(cwd)
 
 
+@pytest.yield_fixture(scope="function")
 def git_repo_remote_ahead():
     """
     Create a fake git repo with the following properties:
@@ -286,10 +277,12 @@ def git_repo_remote_ahead():
         - main repo has upstream set and is AHEAD by 1 commit
     """
     cwd = os.getcwd()
-    folder = "/tmp/zsh_git"
+    folder = tempfile.mkdtemp()
     folder_up = folder + "_upstream"
     cmds = [
         "git init",
+        "git config user.email 'you@example.com'",
+        "git config user.name 'Your Name'",
         "first:A single line",
         "git add first",
         "git commit -m 'first commit'",
@@ -340,6 +333,7 @@ def git_repo_remote_ahead():
         os.chdir(cwd)
 
 
+@pytest.yield_fixture(scope="function")
 def git_repo_remote_behind():
     """
     Create a fake git repo with the following properties:
@@ -348,10 +342,12 @@ def git_repo_remote_behind():
         - main repo has upstream set and is BEHIND by 1 commit
     """
     cwd = os.getcwd()
-    folder = "/tmp/zsh_git"
+    folder = tempfile.mkdtemp()
     folder_up = folder + "_upstream"
     cmds = [
         "git init",
+        "git config user.email 'you@example.com'",
+        "git config user.name 'Your Name'",
         "first:A single line",
         "git add first",
         "git commit -m 'first commit'",
@@ -403,6 +399,7 @@ def git_repo_remote_behind():
         os.chdir(cwd)
 
 
+@pytest.yield_fixture(scope="function")
 def git_repo_remote_diverged():
     """
     Create a fake git repo with the following properties:
@@ -411,10 +408,12 @@ def git_repo_remote_diverged():
         - main repo has upstream set and is has diverged by 1 commit each way
     """
     cwd = os.getcwd()
-    folder = "/tmp/zsh_git"
+    folder = tempfile.mkdtemp()
     folder_up = folder + "_upstream"
     cmds = [
         "git init",
+        "git config user.email 'you@example.com'",
+        "git config user.name 'Your Name'",
         "first:A single line",
         "git add first",
         "git commit -m 'first commit'",
@@ -497,37 +496,30 @@ def test_branch_fatal():
             pass
 
 
-@decorate_test(git_repo_branch_on_master)
-def test_branch_master():
+def test_branch_master(git_repo_branch_on_master):
     assert gitstatus.get_branch() == 'master'
 
 
-@decorate_test(git_repo_branch_on_hash)
-def test_branch_hash():
+def test_branch_hash(git_repo_branch_on_hash):
     actual_hash = gitstatus.run_cmd(shlex.split('git rev-parse --short HEAD'))
     assert gitstatus.get_branch() == gitstatus.SYM_PREHASH + actual_hash
 
 
-@decorate_test(git_repo_compute_stats)
-def test_compute_stats_no_conflicts():
+def test_compute_stats_no_conflicts(git_repo_compute_stats):
     assert run_gitstatus() == 'master 0 0 3 0 1 2 1'
 
 
-@decorate_test(git_repo_compute_stats_only_conflicts)
-def test_compute_stats_only_conflicts():
+def test_compute_stats_only_conflicts(git_repo_compute_stats_only_conflicts):
     assert run_gitstatus() == 'master 1 1 0 1 1 0 0'
 
 
-@decorate_test(git_repo_remote_ahead)
-def test_remote_ahead():
+def test_remote_ahead(git_repo_remote_ahead):
     assert run_gitstatus() == 'master 0 1 0 0 0 0 0'
 
 
-@decorate_test(git_repo_remote_behind)
-def test_remote_behind():
+def test_remote_behind(git_repo_remote_behind):
     assert run_gitstatus() == 'master 1 0 0 0 0 0 0'
 
 
-@decorate_test(git_repo_remote_diverged)
-def test_remote_diverged():
+def test_remote_diverged(git_repo_remote_diverged):
     assert run_gitstatus() == 'master 1 1 0 0 0 0 0'
