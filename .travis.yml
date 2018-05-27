@@ -1,36 +1,64 @@
+---
 # Use new container infrastructure to enable caching
 sudo: false
 
-# Choose a lightweight base image; we provide our own build tools.
-language: c
+# Python for easy testing of python version
+language: python
 
-# GHC depends on GMP. You can add other dependencies here as well.
+matrix:
+  include:
+    # Tested and fails: python <= 2.6.x, python <= 3.1.x
+    # Tested to work but not in this matrix: 3.2.6, 3.3.7
+    - env: ARGS="python"
+      python: "2.7"
+    - env: ARGS="python"
+      python: "3.4"
+    - env: ARGS="python"
+      python: "3.5"
+    - env: ARGS="python"
+      python: "3.6"
+
+    # The different haskell configurations to test.
+    # You could also do things like change flags or
+    # use --stack-yaml to point to a different file.
+    - env: ARGS=""
+      python: "2.7"
+    - env: ARGS="--resolver lts-2"
+      python: "2.7"
+    - env: ARGS="--resolver lts-3"
+      python: "2.7"
+    - env: ARGS="--resolver lts"
+      python: "2.7"
+    - env: ARGS="--resolver nightly"
+      python: "2.7"
+
+# # GHC depends on GMP. You can add other dependencies here as well.
 addons:
   apt:
     packages:
-    - libgmp-dev
+      - libgmp-dev
 
-# The different configurations we want to test. You could also do things like
-# change flags or use --stack-yaml to point to a different file.
-env:
-- ARGS=""
-- ARGS="--resolver lts-2"
-- ARGS="--resolver lts-3"
-- ARGS="--resolver lts"
-- ARGS="--resolver nightly"
-
-before_install:
-# Download and unpack the stack executable
-- mkdir -p ~/.local/bin
-- export PATH=$HOME/.local/bin:$PATH
-- travis_retry curl -L https://www.stackage.org/stack/linux-x86_64 | tar xz --wildcards --strip-components=1 -C ~/.local/bin '*/stack'
+# Download and unpack the stack executable for haskell, else pip deps.
+install:
+  - if [ "$ARGS" = "python" ]; then
+      pip install tox;
+    else
+      mkdir -p ~/.local/bin;
+      export PATH=$HOME/.local/bin:$PATH;
+      travis_retry curl -L https://www.stackage.org/stack/linux-x86_64 | tar xz --wildcards --strip-components=1 -C ~/.local/bin '*/stack';
+    fi
 
 # This line does all of the work: installs GHC if necessary, build the library,
 # executables, and test suites, and runs the test suites. --no-terminal works
 # around some quirks in Travis's terminal implementation.
-script: stack $ARGS --no-terminal --install-ghc test --haddock
+script:
+  - if [ "$ARGS" = "python" ]; then
+      tox;
+    else
+      stack $ARGS --no-terminal --install-ghc test --haddock;
+    fi
 
 # Caching so the next build will be fast too.
 cache:
   directories:
-  - $HOME/.stack
+    - $HOME/.stack

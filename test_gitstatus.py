@@ -1,9 +1,8 @@
 """
-Test module for gitstatus.
+Test module for gitstatus
 
-Importantly the fake repos are setup using generators.
-    next(repo) - repo exists and your CWD is set to it.
-    next(repo) - repo is cleaned up and you are returned to old CWD
+Fixtures used to to setup git repo scenarios on the fly.
+Tests are short and at the end of this file.
 """
 from __future__ import absolute_import, print_function
 import os
@@ -469,16 +468,19 @@ def git_repo_remote_diverged():
 
 
 def test_run_cmd():
+    """ Simple string to suppress doc warning. """
     out = gitstatus.run_cmd(["echo", "It works"])
     assert out == "It works"
 
 
 def test_run_cmd_fail():
+    """ Simple string to suppress doc warning. """
     with pytest.raises(gitstatus.ProcessError):
         gitstatus.run_cmd(["false"])
 
 
 def test_branch_fatal():
+    """ Simple string to suppress doc warning. """
     cwd = os.getcwd()
     try:
         folder = tempfile.mkdtemp()
@@ -497,29 +499,36 @@ def test_branch_fatal():
 
 
 def test_branch_master(git_repo_branch_on_master):
+    """ Simple string to suppress doc warning. """
     assert gitstatus.get_branch() == 'master'
 
 
 def test_branch_hash(git_repo_branch_on_hash):
+    """ Simple string to suppress doc warning. """
     actual_hash = gitstatus.run_cmd(shlex.split('git rev-parse --short HEAD'))
     assert gitstatus.get_branch() == gitstatus.SYM_PREHASH + actual_hash
 
 
 def test_compute_stats_no_conflicts(git_repo_compute_stats):
+    """ Simple string to suppress doc warning. """
     assert run_gitstatus() == 'master 0 0 3 0 1 2 1'
 
 
 def test_compute_stats_only_conflicts(git_repo_compute_stats_only_conflicts):
+    """ Simple string to suppress doc warning. """
     assert run_gitstatus() == 'master 1 1 0 1 1 0 0'
 
 
 def test_remote_ahead(git_repo_remote_ahead):
+    """ Simple string to suppress doc warning. """
     assert run_gitstatus() == 'master 0 1 0 0 0 0 0'
 
 
 def test_remote_behind(git_repo_remote_behind):
+    """ Simple string to suppress doc warning. """
     assert run_gitstatus() == 'master 1 0 0 0 0 0 0'
 
 
 def test_remote_diverged(git_repo_remote_diverged):
+    """ Simple string to suppress doc warning. """
     assert run_gitstatus() == 'master 1 1 0 0 0 0 0'

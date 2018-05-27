@@ -1,6 +1,6 @@
 # Informative git prompt for zsh
 
-[![Build Status](https://travis-ci.org/olivierverdier/zsh-git-prompt.svg)](https://travis-ci.org/olivierverdier/zsh-git-prompt)
+[![Build Status](https://travis-ci.org/starcraftman/zsh-git-prompt.svg)](https://travis-ci.org/starcraftman/zsh-git-prompt)
 
 A `zsh` prompt that displays information about the current git repository. In particular the branch name, difference with remote branch, number of files staged, changed, etc.
 
