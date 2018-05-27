@@ -129,11 +129,13 @@ def main():
     """ Main entry point. """
     branch = get_branch()
     try:
+        local = 0
         remote = compute_ahead_behind(branch)
     except ProcessError:
+        local = 1
         remote = 0, 0
 
-    values = [str(x) for x in (branch,) + remote + compute_stats()]
+    values = [str(x) for x in (branch,) + remote + compute_stats() + (local,)]
     sys.stdout.write(' '.join(values))
     sys.stdout.flush()
 

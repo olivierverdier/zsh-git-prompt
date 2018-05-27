@@ -39,12 +39,17 @@ update_current_git_vars() {
     GIT_CHANGED=$__CURRENT_GIT_STATUS[6]
     GIT_UNTRACKED=$__CURRENT_GIT_STATUS[7]
     GIT_STASHED=$__CURRENT_GIT_STATUS[8]
+    GIT_LOCAL_ONLW=$__CURRENT_GIT_STATUS[9]
 }
 
 git_super_status() {
     precmd_update_git_vars
 
     if [ -n "$__CURRENT_GIT_STATUS" ]; then
+        if [ "$GIT_LOCAL_ONLW" -ne "0" ]; then
+            GIT_BRANCH="$GIT_BRANCH%{${reset_color}%}$ZSH_THEME_GIT_PROMPT_LOCAL"
+        fi
+
         local STATUS="$ZSH_THEME_GIT_PROMPT_PREFIX$ZSH_THEME_GIT_PROMPT_BRANCH$GIT_BRANCH%{${reset_color}%}"
         local clean=1
 
@@ -122,5 +127,6 @@ ZSH_THEME_GIT_PROMPT_AHEAD="%{↑·%2G%}"
 ZSH_THEME_GIT_PROMPT_STASHED="%{$fg_bold[blue]%}%{⚑%G%}"
 ZSH_THEME_GIT_PROMPT_UNTRACKED="%{$fg[cyan]%}%{…%G%}"
 ZSH_THEME_GIT_PROMPT_CLEAN="%{$fg_bold[green]%}%{✔%G%}"
+ZSH_THEME_GIT_PROMPT_LOCAL=" L"
 
 # vim: set filetype=zsh:

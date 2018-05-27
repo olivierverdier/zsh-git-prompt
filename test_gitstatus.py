@@ -268,6 +268,52 @@ def git_repo_branch_on_master():
 
 
 @pytest.yield_fixture(scope="function")
+def git_repo_branch_local_only():
+    """
+    Create a fake git repo with the following properties:
+        - 1 commit
+        - no upstream copy or set value
+    """
+    cwd = os.getcwd()
+    folder = tempfile.mkdtemp()
+    cmds = [
+        "git init",
+        "git config user.email 'you@example.com'",
+        "git config user.name 'Your Name'",
+        "first:A single line",
+        "git add first",
+        "git commit -m 'first commit'",
+    ]
+    try:
+        try:
+            shutil.rmtree(folder)
+        except (OSError, IOError):
+            pass
+        os.makedirs(folder)
+        os.chdir(folder)
+
+        for cmd in cmds:
+            if re.match(r'\S+:', cmd):
+                assert len(cmd.split(":")) == 2
+                fname, text = cmd.split(":")
+                with open(os.path.join(folder, fname), 'a') as fout:
+                    fout.write(text + '\n')
+            else:
+                with open(os.devnull, 'w') as devnull:
+                    subprocess.check_call(shlex.split(cmd),
+                                          stdout=devnull, stderr=subprocess.STDOUT)
+
+        yield
+
+    finally:
+        try:
+            shutil.rmtree(folder)
+        except (OSError, IOError):
+            pass
+        os.chdir(cwd)
+
+
+@pytest.yield_fixture(scope="function")
 def git_repo_remote_ahead():
     """
     Create a fake git repo with the following properties:
@@ -509,26 +555,31 @@ def test_branch_hash(git_repo_branch_on_hash):
     assert gitstatus.get_branch() == gitstatus.SYM_PREHASH + actual_hash
 
 
+def test_branch_local(git_repo_branch_local_only):
+    """ Simple string to suppress doc warning. """
+    assert run_gitstatus() == 'master 0 0 0 0 0 0 0 1'
+
+
 def test_compute_stats_no_conflicts(git_repo_compute_stats):
     """ Simple string to suppress doc warning. """
-    assert run_gitstatus() == 'master 0 0 3 0 1 2 1'
+    assert run_gitstatus() == 'master 0 0 3 0 1 2 1 0'
 
 
 def test_compute_stats_only_conflicts(git_repo_compute_stats_only_conflicts):
     """ Simple string to suppress doc warning. """
-    assert run_gitstatus() == 'master 1 1 0 1 1 0 0'
+    assert run_gitstatus() == 'master 1 1 0 1 1 0 0 0'
 
 
 def test_remote_ahead(git_repo_remote_ahead):
     """ Simple string to suppress doc warning. """
-    assert run_gitstatus() == 'master 0 1 0 0 0 0 0'
+    assert run_gitstatus() == 'master 0 1 0 0 0 0 0 0'
 
 
 def test_remote_behind(git_repo_remote_behind):
     """ Simple string to suppress doc warning. """
-    assert run_gitstatus() == 'master 1 0 0 0 0 0 0'
+    assert run_gitstatus() == 'master 1 0 0 0 0 0 0 0'
 
 
 def test_remote_diverged(git_repo_remote_diverged):
     """ Simple string to suppress doc warning. """
-    assert run_gitstatus() == 'master 1 1 0 0 0 0 0'
+    assert run_gitstatus() == 'master 1 1 0 0 0 0 0 0'

@@ -1,6 +1,6 @@
 # Informative git prompt for zsh
 
-[![Build Status](https://travis-ci.org/starcraftman/zsh-git-prompt.svg)](https://travis-ci.org/starcraftman/zsh-git-prompt)
+[![Build Status](https://travis-ci.org/starcraftman/zsh-git-prompt.svg?branch=master)](https://travis-ci.org/starcraftman/zsh-git-prompt)
 
 A `zsh` prompt that displays information about the current git repository. In particular the branch name, difference with remote branch, number of files staged, changed, etc.
 
@@ -85,12 +85,13 @@ There is now a Haskell implementation as well, which can be four to six times fa
 
 ## Customization
 
-- Define the variable `ZSH_THEME_GIT_PROMPT_CACHE` in order to enable caching.
+- Define the variable `ZSH_THEME_GIT_PROMPT_CACHE=1` in order to enable caching.
 
 - You may redefine the function `git_super_status` (after the `source` statement) to adapt it to your needs (to change the order in which the information is displayed).
 
 - To modify the symbols/colors of the theme, simply redefine the variables at bottom of the
-the `zshrc.sh` after sourcing. These are the defaults:
+the `zshrc.sh` after sourcing. This could be in your `~/.zshrc` or sourced elsewhere.
+These are the defaults:
 
 ```sh
     ZSH_THEME_GIT_PROMPT_PREFIX="["
@@ -106,6 +107,7 @@ the `zshrc.sh` after sourcing. These are the defaults:
     ZSH_THEME_GIT_PROMPT_STASHED="%{$fg_bold[blue]%}%{⚑%G%}"
     ZSH_THEME_GIT_PROMPT_UNTRACKED="%{$fg[cyan]%}%{…%G%}"
     ZSH_THEME_GIT_PROMPT_CLEAN="%{$fg_bold[green]%}%{✔%G%}"
+    ZSH_THEME_GIT_PROMPT_LOCAL=" L"
 ```
 
 **Enjoy!**
