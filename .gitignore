@@ -1,7 +1,10 @@
-src/.bin
-**/__pycache__
-.cache
-.pytest_cache/
+.coverage
 .python-version
-**/.stack-work/
-.tox/
+
+# Directories
+src/.bin
+.cache/
+**/__pycache__
+.pytest_cache
+**/.stack-work
+.tox
