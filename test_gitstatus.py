@@ -513,18 +513,6 @@ def git_repo_remote_diverged():
         os.chdir(cwd)
 
 
-def test_run_cmd():
-    """ Simple string to suppress doc warning. """
-    out = gitstatus.run_cmd(["echo", "It works"])
-    assert out == "It works"
-
-
-def test_run_cmd_fail():
-    """ Simple string to suppress doc warning. """
-    with pytest.raises(gitstatus.ProcessError):
-        gitstatus.run_cmd(["false"])
-
-
 def test_branch_fatal():
     """ Simple string to suppress doc warning. """
     cwd = os.getcwd()
@@ -546,13 +534,14 @@ def test_branch_fatal():
 
 def test_branch_master(git_repo_branch_on_master):
     """ Simple string to suppress doc warning. """
-    assert gitstatus.get_branch() == 'master'
+    assert run_gitstatus() == 'master 0 0 0 0 0 0 0 1'
 
 
 def test_branch_hash(git_repo_branch_on_hash):
     """ Simple string to suppress doc warning. """
-    actual_hash = gitstatus.run_cmd(shlex.split('git rev-parse --short HEAD'))
-    assert gitstatus.get_branch() == gitstatus.SYM_PREHASH + actual_hash
+    actual_hash = subprocess.check_output(shlex.split('git rev-parse --short HEAD'))
+    actual_hash = actual_hash.decode('utf-8', errors='ignore').strip()
+    assert run_gitstatus() == ':{} 0 0 0 0 0 0 0 0'.format(actual_hash)
 
 
 def test_branch_local(git_repo_branch_local_only):
@@ -567,7 +556,7 @@ def test_compute_stats_no_conflicts(git_repo_compute_stats):
 
 def test_compute_stats_only_conflicts(git_repo_compute_stats_only_conflicts):
     """ Simple string to suppress doc warning. """
-    assert run_gitstatus() == 'master 1 1 0 1 1 0 0 0'
+    assert run_gitstatus() == 'master 1 1 0 1 0 0 0 0'
 
 
 def test_remote_ahead(git_repo_remote_ahead):
@@ -583,3 +572,18 @@ def test_remote_behind(git_repo_remote_behind):
 def test_remote_diverged(git_repo_remote_diverged):
     """ Simple string to suppress doc warning. """
     assert run_gitstatus() == 'master 1 1 0 0 0 0 0 0'
+
+
+def test_parse_ahead_behind_only_ahead():
+    """ Simple string to suppress doc warning. """
+    assert gitstatus.parse_ahead_behind("## master...up/master [ahead 1]") == (0, 1)
+
+
+def test_parse_ahead_behind_only_behind():
+    """ Simple string to suppress doc warning. """
+    assert gitstatus.parse_ahead_behind("## master...up/master [behind 1]") == (1, 0)
+
+
+def test_parse_ahead_behind_both():
+    """ Simple string to suppress doc warning. """
+    assert gitstatus.parse_ahead_behind("## master...up/master [ahead 1, behind 1]") == (1, 1)
