@@ -520,7 +520,7 @@ def test_branch_fatal():
         folder = tempfile.mkdtemp()
         os.chdir(folder)
         try:
-            gitstatus.get_branch()
+            gitstatus.main()
             assert False
         except SystemExit:
             pass

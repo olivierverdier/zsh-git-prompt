@@ -65,31 +65,22 @@ def parse_ahead_behind(branch):
     return behind, ahead
 
 
-def get_branch():
+def parse_branch(branch):
     """
     Determine the current state of HEAD (on a branch or checked out on hash).
     Determine if the branch has an upstream set.
     Determine if the branch is local only.
     Capture status for later processing.
 
+    Args:
+        branch: The branch line of porcelain
+
     Returns: A tuple of following ...
         branch: Set to the actual branch name or the hash we are on.
         upstream: Set to the upstream branch if tracked else SYM_NOUPSTREAM.
         local: 1 IFF the branch has no upstream and is not checked out hash.
-        lines: The full capture of git status for later processing. List of lines.
-
-    Raises:
-        SystemExit - No git repository in CWD.
     """
-    proc = sub.Popen(['git', 'status', '--branch', '--porcelain'],
-                     stdout=sub.PIPE, stderr=sub.PIPE)
-    out, err = proc.communicate()
-    err = err.decode('utf-8', errors='ignore').strip()
-    if 'fatal: not a git repository' in err.lower():
-        sys.exit(0)
-
-    lines = out.decode('utf-8', errors='ignore').splitlines()
-    branch = lines[0][3:]
+    branch = branch[3:]
     if ' [' in branch:
         branch = branch[:branch.rindex(' [')]
 
@@ -103,13 +94,22 @@ def get_branch():
         branch, upstream = branch.split('...')
         local = 0
 
-    return branch, upstream, local, lines
+    return branch, upstream, local
 
 
 def main():
     """ Main entry point. """
+    # TODO: Read from sys.stdin, execute ONLY if not sent
+    proc = sub.Popen(['git', 'status', '--branch', '--porcelain'],
+                     stdout=sub.PIPE, stderr=sub.PIPE)
+    out, err = proc.communicate()
+    err = err.decode('utf-8', errors='ignore').strip()
+    if 'fatal: not a git repository' in err.lower():
+        sys.exit(0)
+
+    lines = out.decode('utf-8', errors='ignore').splitlines()
     # TODO: Use upstream and update tests
-    branch, _, local, lines = get_branch()
+    branch, _, local = parse_branch(lines[0])
     remote = parse_ahead_behind(lines[0])
     stats = compute_stats(lines[1:])
 
