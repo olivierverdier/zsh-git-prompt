@@ -130,7 +130,7 @@ def main():
             Will read stdin and parse it.
     """
     if not sys.stdin.isatty():
-        lines = sys.stdin.readlines()
+        lines = [line.rstrip() for line in sys.stdin.readlines()]
         err = u'\n'.join(lines)
     else:
         proc = sub.Popen(['git', 'status', '--branch', '--porcelain'],
