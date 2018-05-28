@@ -30,7 +30,7 @@ def run_gitstatus():
 
 
 @pytest.yield_fixture(scope="function")
-def git_repo_compute_stats():
+def git_repo_parse_stats():
     """
     Create a fake git repo with the following properties:
         - upstream set to another local git repo
@@ -99,7 +99,7 @@ def git_repo_compute_stats():
 
 
 @pytest.yield_fixture(scope="function")
-def git_repo_compute_stats_only_conflicts():
+def git_repo_parse_stats_only_conflicts():
     """
     Create a fake git repo with the following properties:
         - upstream set to another local git repo
@@ -549,12 +549,12 @@ def test_branch_local(git_repo_branch_local_only):
     assert run_gitstatus() == 'master 0 0 0 0 0 0 0 1'
 
 
-def test_compute_stats_no_conflicts(git_repo_compute_stats):
+def test_parse_stats_no_conflicts(git_repo_parse_stats):
     """ Simple string to suppress doc warning. """
     assert run_gitstatus() == 'master 0 0 3 0 1 2 1 0'
 
 
-def test_compute_stats_only_conflicts(git_repo_compute_stats_only_conflicts):
+def test_parse_stats_only_conflicts(git_repo_parse_stats_only_conflicts):
     """ Simple string to suppress doc warning. """
     assert run_gitstatus() == 'master 1 1 0 1 0 0 0 0'
 
@@ -587,3 +587,13 @@ def test_parse_ahead_behind_only_behind():
 def test_parse_ahead_behind_both():
     """ Simple string to suppress doc warning. """
     assert gitstatus.parse_ahead_behind("## master...up/master [ahead 1, behind 1]") == (1, 1)
+
+
+def test_main_stdin(git_repo_parse_stats):
+    """ Simple string to suppress doc warning. """
+    out = subprocess.check_output(['git', 'status', '--branch', '--porcelain'])
+    with tempfile.TemporaryFile() as finput:
+        finput.write(out)
+        finput.seek(0)
+        out = subprocess.check_output(['python', GIT_STATUS], stdin=finput)
+    assert out.decode('utf-8', errors='ignore') == 'master 0 0 3 0 1 2 1 0'

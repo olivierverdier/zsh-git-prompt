@@ -9,22 +9,22 @@ import os
 import subprocess as sub
 import sys
 
+# Denotes no upstream set, impossible branch name per git ref spec
+SYM_NOUPSTREAM = '..'
 # This symbol appears before hashes when detached
-SYM_NOUPSTREAM = '..'  # Illegal branch name, can't exist
 SYM_PREHASH = os.environ.get('ZSH_THEME_GIT_PROMPT_HASH_PREFIX', ':')
 
 
-def compute_stats(lines):
+def parse_stats(lines):
     """
-    Computes and returns the following _numbers_ based on git status porcelain output.
-        staged files
-        conflicts
-        changed
-        untracked
-        stashed files
+    Computes and returns the following _numbers_ describing the current state.
+        number of staged files
+        number of conflicts
+        number of changed files
+        number of untracked files
 
     Returns:
-        (# staged files, # conflicts, # changed, # untracked, # stashed)
+        (# staged, # conflicts, # changed, # untracked)
     """
     staged, conflicts, changed, untracked = 0, 0, 0, 0
 
@@ -97,21 +97,17 @@ def parse_branch(branch):
     return branch, upstream, local
 
 
-def main():
-    """ Main entry point. """
-    # TODO: Read from sys.stdin, execute ONLY if not sent
-    proc = sub.Popen(['git', 'status', '--branch', '--porcelain'],
-                     stdout=sub.PIPE, stderr=sub.PIPE)
-    out, err = proc.communicate()
-    err = err.decode('utf-8', errors='ignore').strip()
-    if 'fatal: not a git repository' in err.lower():
-        sys.exit(0)
+def current_git_status(lines):
+    """
+    Parse git status procelain output and return the formatted text that
+    represents the current status of the respoistory.
 
-    lines = out.decode('utf-8', errors='ignore').splitlines()
+    Returns: The formatted message representing the git repository.
+    """
     # TODO: Use upstream and update tests
     branch, _, local = parse_branch(lines[0])
     remote = parse_ahead_behind(lines[0])
-    stats = compute_stats(lines[1:])
+    stats = parse_stats(lines[1:])
 
     try:
         with open('.git/logs/refs/stash') as fin:
@@ -120,7 +116,33 @@ def main():
         stashed = 0
 
     values = [str(x) for x in (branch,) + remote + stats + (stashed, local)]
-    sys.stdout.write(' '.join(values))
+
+    return ' '.join(values)
+
+
+def main():
+    """
+    This program can be run two ways:
+        1) `./gitstatus.py`
+            Will wait on subprocess to execute below git status command.
+
+        2) `git status --branch --porcelain | ./gitstatus.py`
+            Will read stdin and parse it.
+    """
+    if not sys.stdin.isatty():
+        lines = sys.stdin.readlines()
+        err = u'\n'.join(lines)
+    else:
+        proc = sub.Popen(['git', 'status', '--branch', '--porcelain'],
+                         stdout=sub.PIPE, stderr=sub.PIPE)
+        out, err = proc.communicate()
+        err = err.decode('utf-8', errors='ignore').strip()
+        lines = out.decode('utf-8', errors='ignore').splitlines()
+
+    if 'fatal: not a git repository' in err.lower():
+        sys.exit(0)
+
+    sys.stdout.write(current_git_status(lines))
     sys.stdout.flush()
 
 
