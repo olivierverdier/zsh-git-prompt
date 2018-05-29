@@ -87,6 +87,8 @@ There is now a Haskell implementation as well, which can be four to six times fa
 
 - Define the variable `ZSH_THEME_GIT_PROMPT_CACHE=1` in order to enable caching.
 
+- Define the variable `ZSH_GIT_PROMPT_SHOW_UPSTREAM=1` in order to see the remote branch you are tracking.
+
 - You may redefine the function `git_super_status` (after the `source` statement) to adapt it to your needs (to change the order in which the information is displayed).
 
 - To modify the symbols/colors of the theme, simply redefine the variables at bottom of the
@@ -108,6 +110,9 @@ These are the defaults:
     ZSH_THEME_GIT_PROMPT_UNTRACKED="%{$fg[cyan]%}%{…%G%}"
     ZSH_THEME_GIT_PROMPT_CLEAN="%{$fg_bold[green]%}%{✔%G%}"
     ZSH_THEME_GIT_PROMPT_LOCAL=" L"
+    # The remote branch will be shown between these two
+    ZSH_THEME_GIT_PROMPT_UPSTREAM_FRONT=" {%{$fg_bold[blue]%}"
+    ZSH_THEME_GIT_PROMPT_UPSTREAM_END="%{${reset_color}%}}"
 ```
 
 **Enjoy!**

@@ -39,19 +39,27 @@ update_current_git_vars() {
     GIT_CHANGED=$__CURRENT_GIT_STATUS[6]
     GIT_UNTRACKED=$__CURRENT_GIT_STATUS[7]
     GIT_STASHED=$__CURRENT_GIT_STATUS[8]
-    GIT_LOCAL_ONLW=$__CURRENT_GIT_STATUS[9]
+    GIT_LOCAL_ONLY=$__CURRENT_GIT_STATUS[9]
+    GIT_UPSTREAM=$__CURRENT_GIT_STATUS[10]
 }
 
 git_super_status() {
     precmd_update_git_vars
 
     if [ -n "$__CURRENT_GIT_STATUS" ]; then
-        if [ "$GIT_LOCAL_ONLW" -ne "0" ]; then
-            GIT_BRANCH="$GIT_BRANCH%{${reset_color}%}$ZSH_THEME_GIT_PROMPT_LOCAL"
-        fi
-
         local STATUS="$ZSH_THEME_GIT_PROMPT_PREFIX$ZSH_THEME_GIT_PROMPT_BRANCH$GIT_BRANCH%{${reset_color}%}"
         local clean=1
+
+        if [ "$GIT_LOCAL_ONLY" -ne "0" ]; then
+            STATUS="$STATUS$ZSH_THEME_GIT_PROMPT_LOCAL%{${reset_color}%}"
+        fi
+        if [ "$GIT_PROMPT_SHOW_UPSTREAM" -eq "1" ] && [ -n "$GIT_UPSTREAM" ] && [ "$GIT_UPSTREAM" != ".." ]; then
+            local parts=( "${(s:/:)GIT_UPSTREAM}" )
+            if [ "$parts[2]" = "$GIT_BRANCH" ]; then
+                GIT_UPSTREAM="$parts[1]/"
+            fi
+            STATUS="$STATUS$ZSH_THEME_GIT_PROMPT_UPSTREAM_FRONT$GIT_UPSTREAM$ZSH_THEME_GIT_PROMPT_UPSTREAM_END%{${reset_color}%}"
+        fi
 
         if [ "$GIT_BEHIND" -ne "0" ] || [ "$GIT_AHEAD" -ne "0" ]; then
             STATUS="$STATUS "
@@ -128,5 +136,8 @@ ZSH_THEME_GIT_PROMPT_STASHED="%{$fg_bold[blue]%}%{⚑%G%}"
 ZSH_THEME_GIT_PROMPT_UNTRACKED="%{$fg[cyan]%}%{…%G%}"
 ZSH_THEME_GIT_PROMPT_CLEAN="%{$fg_bold[green]%}%{✔%G%}"
 ZSH_THEME_GIT_PROMPT_LOCAL=" L"
+# The remote branch will be shown between these two
+ZSH_THEME_GIT_PROMPT_UPSTREAM_FRONT=" {%{$fg[blue]%}"
+ZSH_THEME_GIT_PROMPT_UPSTREAM_END="%{${reset_color}%}}"
 
 # vim: set filetype=zsh:

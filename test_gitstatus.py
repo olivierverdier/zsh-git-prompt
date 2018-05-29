@@ -590,44 +590,44 @@ def test_branch_fatal(empty_working_directory):
 
 def test_branch_master(git_repo_branch_on_master):
     """ A unit test for gitstatus. """
-    assert run_gitstatus() == 'master 0 0 0 0 0 0 0 1'
+    assert run_gitstatus() == 'master 0 0 0 0 0 0 0 1 ' + gitstatus.SYM_NOUPSTREAM
 
 
 def test_branch_hash(git_repo_branch_on_hash):
     """ A unit test for gitstatus. """
     actual_hash = subprocess.check_output(shlex.split('git rev-parse --short HEAD'))
     actual_hash = actual_hash.decode('utf-8', errors='ignore').strip()
-    assert run_gitstatus() == ':{} 0 0 0 0 0 0 0 0'.format(actual_hash)
+    assert run_gitstatus() == ':{} 0 0 0 0 0 0 0 0 {}'.format(actual_hash, gitstatus.SYM_NOUPSTREAM)
 
 
 def test_branch_local(git_repo_branch_local_only):
     """ A unit test for gitstatus. """
-    assert run_gitstatus() == 'master 0 0 0 0 0 0 0 1'
+    assert run_gitstatus() == 'master 0 0 0 0 0 0 0 1 ' + gitstatus.SYM_NOUPSTREAM
 
 
 def test_parse_stats_no_conflicts(git_repo_parse_stats):
     """ A unit test for gitstatus. """
-    assert run_gitstatus() == 'master 0 0 3 0 1 2 1 0'
+    assert run_gitstatus() == 'master 0 0 3 0 1 2 1 0 up/master'
 
 
 def test_parse_stats_only_conflicts(git_repo_parse_stats_only_conflicts):
     """ A unit test for gitstatus. """
-    assert run_gitstatus() == 'master 1 1 0 1 0 0 0 0'
+    assert run_gitstatus() == 'master 1 1 0 1 0 0 0 0 up/master'
 
 
 def test_remote_ahead(git_repo_remote_ahead):
     """ A unit test for gitstatus. """
-    assert run_gitstatus() == 'master 0 1 0 0 0 0 0 0'
+    assert run_gitstatus() == 'master 0 1 0 0 0 0 0 0 up/master'
 
 
 def test_remote_behind(git_repo_remote_behind):
     """ A unit test for gitstatus. """
-    assert run_gitstatus() == 'master 1 0 0 0 0 0 0 0'
+    assert run_gitstatus() == 'master 1 0 0 0 0 0 0 0 up/master'
 
 
 def test_remote_diverged(git_repo_remote_diverged):
     """ A unit test for gitstatus. """
-    assert run_gitstatus() == 'master 1 1 0 0 0 0 0 0'
+    assert run_gitstatus() == 'master 1 1 0 0 0 0 0 0 up/master'
 
 
 def test_parse_ahead_behind_only_ahead():
@@ -652,7 +652,7 @@ def test_main_stdin(git_repo_parse_stats):
         finput.write(out)
         finput.seek(0)
         out = subprocess.check_output(['python', GIT_STATUS], stdin=finput)
-    assert out.decode('utf-8', errors='ignore') == 'master 0 0 3 0 1 2 1 0'
+    assert out.decode('utf-8', errors='ignore') == 'master 0 0 3 0 1 2 1 0 up/master'
 
 
 def test_find_git_root(git_repo_find_git_root):
@@ -674,7 +674,8 @@ def test_git_paths_in_working_tree(git_repo_with_worktree):
     """ A unit test for gitstatus. """
     actual_hash = subprocess.check_output(shlex.split('git rev-parse --short HEAD'))
     actual_hash = actual_hash.decode('utf-8', errors='ignore').strip()
-    assert run_gitstatus() == "{}{} 0 0 0 0 0 0 0 0".format(gitstatus.SYM_PREHASH, actual_hash)
+    assert run_gitstatus() == "{}{} 0 0 0 0 0 0 0 0 {}".format(gitstatus.SYM_PREHASH, actual_hash,
+                                                               gitstatus.SYM_NOUPSTREAM)
 
 
 def test_main_not_in_repo(empty_working_directory):

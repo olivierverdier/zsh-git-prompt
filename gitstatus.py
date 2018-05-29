@@ -122,7 +122,6 @@ def parse_branch(branch):
     Determine the current state of HEAD (on a branch or checked out on hash).
     Determine if the branch has an upstream set.
     Determine if the branch is local only.
-    Capture status for later processing.
 
     Args:
         branch: The branch line of porcelain
@@ -157,7 +156,7 @@ def current_git_status(lines):
     Returns: The formatted message representing the git repository.
     """
     # TODO: Use upstream and update tests
-    branch, _, local = parse_branch(lines[0])
+    branch, upstream, local = parse_branch(lines[0])
     remote = parse_ahead_behind(lines[0])
     stats = parse_stats(lines[1:])
 
@@ -167,7 +166,7 @@ def current_git_status(lines):
     except IOError:
         stashed = 0
 
-    values = [str(x) for x in (branch,) + remote + stats + (stashed, local)]
+    values = [str(x) for x in (branch,) + remote + stats + (stashed, local, upstream)]
 
     return ' '.join(values)
 
@@ -198,11 +197,9 @@ def main():
     sys.stdout.flush()
 
 
-try:
-    HEAD_FILE, STASH_FILE = git_paths()
-except IOError:
-    pass
-
-
 if __name__ == "__main__":
+    try:
+        HEAD_FILE, STASH_FILE = git_paths()
+    except IOError:
+        pass
     main()
