@@ -13,17 +13,18 @@ import sys
 SYM_NOUPSTREAM = '..'
 # This symbol appears before hashes when detached
 SYM_PREHASH = os.environ.get('ZSH_THEME_GIT_PROMPT_HASH_PREFIX', ':')
+HEAD_FILE = None
+STASH_FILE = None
 
 
-# TODO: Naiev fix, consider work trees too.
 def find_git_root():
     """
     Find the nearest enclosing git root.
-    Condition: Will be called from within a git respository.
 
     Returns: The git project root.
 
-    Raises: IOError - Could not find the directory.
+    Raises:
+        IOError: There is no `.git` folder in the current folder hierarchy.
     """
     working_d = os.getcwd()
     while working_d != '/':
@@ -33,6 +34,37 @@ def find_git_root():
         working_d = os.path.dirname(working_d)
 
     raise IOError("No git dir in folder hierarchy.")
+
+
+# Example contents of worktree `.git` file, worktree is w1
+#       gitdir: /tmp/zsh-git-prompt/.git/worktrees/w1
+def git_paths():
+    """
+    Determine the location of the head file and stash file for the current repository.
+    This function takes into account if we are currently in a worktree.
+    Paths will be absolute to location in the ORIGINAL repository.
+
+    Returns: (head_file, stash_file)
+
+    Raises:
+        IOError: CWD is not in a git repository.
+    """
+    git_root = find_git_root()
+    if os.path.isdir(git_root):
+        head_file = os.path.join(git_root, 'HEAD')
+    else:  # worktree
+        with open(git_root) as fin:
+            tree_d = fin.read().split(": ")[1].strip()
+
+        git_root = tree_d
+        while os.path.basename(git_root) != '.git':
+            git_root = os.path.dirname(git_root)
+
+        head_file = os.path.join(tree_d, 'HEAD')
+
+    stash_file = os.path.join(git_root, 'logs', 'refs', 'stash')
+
+    return head_file, stash_file
 
 
 def parse_stats(lines):
@@ -107,7 +139,7 @@ def parse_branch(branch):
     upstream = SYM_NOUPSTREAM
     local = 1
     if 'no branch' in branch:
-        with open(os.path.join(GIT_D, 'HEAD')) as fin:
+        with open(HEAD_FILE) as fin:
             branch = SYM_PREHASH + fin.read().strip()[:7]
         local = 0
     elif '...' in branch:
@@ -130,7 +162,7 @@ def current_git_status(lines):
     stats = parse_stats(lines[1:])
 
     try:
-        with open(os.path.join(GIT_D, 'logs', 'refs', 'stash')) as fin:
+        with open(STASH_FILE) as fin:
             stashed = len(fin.readlines())
     except IOError:
         stashed = 0
@@ -167,7 +199,7 @@ def main():
 
 
 try:
-    GIT_D = find_git_root()
+    HEAD_FILE, STASH_FILE = git_paths()
 except IOError:
     pass
 

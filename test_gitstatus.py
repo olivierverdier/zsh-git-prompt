@@ -62,15 +62,6 @@ def git_repo_parse_stats():
         "git branch --set-upstream-to=up/master",
     ]
     try:
-        try:
-            shutil.rmtree(folder)
-        except (OSError, IOError):
-            pass
-        try:
-            shutil.rmtree(folder_up)
-        except (OSError, IOError):
-            pass
-        os.makedirs(folder)
         os.chdir(folder)
 
         for cmd in cmds:
@@ -129,15 +120,6 @@ def git_repo_parse_stats_only_conflicts():
         "git merge up/master",
     ]
     try:
-        try:
-            shutil.rmtree(folder)
-        except (OSError, IOError):
-            pass
-        try:
-            shutil.rmtree(folder_up)
-        except (OSError, IOError):
-            pass
-        os.makedirs(folder)
         os.chdir(folder)
 
         for cmd in cmds:
@@ -190,11 +172,6 @@ def git_repo_branch_on_hash():
         "git checkout HEAD~1",
     ]
     try:
-        try:
-            shutil.rmtree(folder)
-        except (OSError, IOError):
-            pass
-        os.makedirs(folder)
         os.chdir(folder)
 
         for cmd in cmds:
@@ -239,11 +216,6 @@ def git_repo_branch_on_master():
         "git commit -m 'second commit'",
     ]
     try:
-        try:
-            shutil.rmtree(folder)
-        except (OSError, IOError):
-            pass
-        os.makedirs(folder)
         os.chdir(folder)
 
         for cmd in cmds:
@@ -285,11 +257,6 @@ def git_repo_branch_local_only():
         "git commit -m 'first commit'",
     ]
     try:
-        try:
-            shutil.rmtree(folder)
-        except (OSError, IOError):
-            pass
-        os.makedirs(folder)
         os.chdir(folder)
 
         for cmd in cmds:
@@ -342,15 +309,6 @@ def git_repo_remote_ahead():
         "git branch --set-upstream-to=up/master",
     ]
     try:
-        try:
-            shutil.rmtree(folder)
-        except (OSError, IOError):
-            pass
-        try:
-            shutil.rmtree(folder_up)
-        except (OSError, IOError):
-            pass
-        os.makedirs(folder)
         os.chdir(folder)
 
         for cmd in cmds:
@@ -408,15 +366,6 @@ def git_repo_remote_behind():
         "git reset --hard HEAD~1",
     ]
     try:
-        try:
-            shutil.rmtree(folder)
-        except (OSError, IOError):
-            pass
-        try:
-            shutil.rmtree(folder_up)
-        except (OSError, IOError):
-            pass
-        os.makedirs(folder)
         os.chdir(folder)
 
         for cmd in cmds:
@@ -477,15 +426,6 @@ def git_repo_remote_diverged():
         "git commit -m 'different third commit'",
     ]
     try:
-        try:
-            shutil.rmtree(folder)
-        except (OSError, IOError):
-            pass
-        try:
-            shutil.rmtree(folder_up)
-        except (OSError, IOError):
-            pass
-        os.makedirs(folder)
         os.chdir(folder)
 
         for cmd in cmds:
@@ -531,13 +471,7 @@ def git_repo_find_git_root():
         "git commit -m 'first commit'",
     ]
     try:
-        try:
-            shutil.rmtree(folder)
-        except (OSError, IOError):
-            pass
-        #  os.makedirs(folder)
         subs = os.path.join(folder, 'd_one', 'd_two', 'd_three')
-        print(subs)
         os.makedirs(subs)
         os.chdir(folder)
 
@@ -562,17 +496,81 @@ def git_repo_find_git_root():
         os.chdir(cwd)
 
 
-def test_branch_fatal():
-    """ Simple string to suppress doc warning. """
+@pytest.yield_fixture(scope="function")
+def git_repo_with_worktree():
+    """
+    Create a fake git repo with the following properties:
+        - main repo has 3 commits
+        - upstream repo has 3 commits
+        - main repo has upstream set and is has diverged by 1 commit each way
+    """
+    cwd = os.getcwd()
+    folder = tempfile.mkdtemp()
+    folder_tree = folder + "_worktree"
+    cmds = [
+        "git init",
+        "git config user.email 'you@example.com'",
+        "git config user.name 'Your Name'",
+        "first:A single line",
+        "git add first",
+        "git commit -m 'first commit'",
+        "first:Second line",
+        "git add first",
+        "git commit -m 'second commit'",
+        "git branch tree",
+        "git checkout tree",
+        "first:third line",
+        "git add first",
+        "git commit -m 'third commit'",
+        "git checkout master",
+        "git worktree add --detach %s tree" % (folder_tree),
+    ]
+    try:
+        try:
+            shutil.rmtree(folder)
+        except (OSError, IOError):
+            pass
+        try:
+            shutil.rmtree(folder_tree)
+        except (OSError, IOError):
+            pass
+        os.makedirs(folder)
+        os.chdir(folder)
+
+        for cmd in cmds:
+            if re.match(r'\S+:', cmd):
+                assert len(cmd.split(":")) == 2
+                fname, text = cmd.split(":")
+                with open(os.path.join(folder, fname), 'a') as fout:
+                    fout.write(text + '\n')
+            else:
+                with open(os.devnull, 'w') as devnull:
+                    subprocess.check_call(shlex.split(cmd),
+                                          stdout=devnull, stderr=subprocess.STDOUT)
+
+        os.chdir(folder_tree)
+        yield
+
+    finally:
+        try:
+            shutil.rmtree(folder)
+        except (OSError, IOError):
+            pass
+        try:
+            shutil.rmtree(folder_tree)
+        except (OSError, IOError):
+            pass
+        os.chdir(cwd)
+
+
+@pytest.yield_fixture(scope="function")
+def empty_working_directory():
     cwd = os.getcwd()
     try:
         folder = tempfile.mkdtemp()
         os.chdir(folder)
-        try:
-            gitstatus.main()
-            assert False
-        except SystemExit:
-            pass
+
+        yield
     finally:
         os.chdir(cwd)
         try:
@@ -581,65 +579,74 @@ def test_branch_fatal():
             pass
 
 
+def test_branch_fatal(empty_working_directory):
+    """ A unit test for gitstatus. """
+    try:
+        gitstatus.main()
+        assert False
+    except SystemExit:
+        pass
+
+
 def test_branch_master(git_repo_branch_on_master):
-    """ Simple string to suppress doc warning. """
+    """ A unit test for gitstatus. """
     assert run_gitstatus() == 'master 0 0 0 0 0 0 0 1'
 
 
 def test_branch_hash(git_repo_branch_on_hash):
-    """ Simple string to suppress doc warning. """
+    """ A unit test for gitstatus. """
     actual_hash = subprocess.check_output(shlex.split('git rev-parse --short HEAD'))
     actual_hash = actual_hash.decode('utf-8', errors='ignore').strip()
     assert run_gitstatus() == ':{} 0 0 0 0 0 0 0 0'.format(actual_hash)
 
 
 def test_branch_local(git_repo_branch_local_only):
-    """ Simple string to suppress doc warning. """
+    """ A unit test for gitstatus. """
     assert run_gitstatus() == 'master 0 0 0 0 0 0 0 1'
 
 
 def test_parse_stats_no_conflicts(git_repo_parse_stats):
-    """ Simple string to suppress doc warning. """
+    """ A unit test for gitstatus. """
     assert run_gitstatus() == 'master 0 0 3 0 1 2 1 0'
 
 
 def test_parse_stats_only_conflicts(git_repo_parse_stats_only_conflicts):
-    """ Simple string to suppress doc warning. """
+    """ A unit test for gitstatus. """
     assert run_gitstatus() == 'master 1 1 0 1 0 0 0 0'
 
 
 def test_remote_ahead(git_repo_remote_ahead):
-    """ Simple string to suppress doc warning. """
+    """ A unit test for gitstatus. """
     assert run_gitstatus() == 'master 0 1 0 0 0 0 0 0'
 
 
 def test_remote_behind(git_repo_remote_behind):
-    """ Simple string to suppress doc warning. """
+    """ A unit test for gitstatus. """
     assert run_gitstatus() == 'master 1 0 0 0 0 0 0 0'
 
 
 def test_remote_diverged(git_repo_remote_diverged):
-    """ Simple string to suppress doc warning. """
+    """ A unit test for gitstatus. """
     assert run_gitstatus() == 'master 1 1 0 0 0 0 0 0'
 
 
 def test_parse_ahead_behind_only_ahead():
-    """ Simple string to suppress doc warning. """
+    """ A unit test for gitstatus. """
     assert gitstatus.parse_ahead_behind("## master...up/master [ahead 1]") == (0, 1)
 
 
 def test_parse_ahead_behind_only_behind():
-    """ Simple string to suppress doc warning. """
+    """ A unit test for gitstatus. """
     assert gitstatus.parse_ahead_behind("## master...up/master [behind 1]") == (1, 0)
 
 
 def test_parse_ahead_behind_both():
-    """ Simple string to suppress doc warning. """
+    """ A unit test for gitstatus. """
     assert gitstatus.parse_ahead_behind("## master...up/master [ahead 1, behind 1]") == (1, 1)
 
 
 def test_main_stdin(git_repo_parse_stats):
-    """ Simple string to suppress doc warning. """
+    """ A unit test for gitstatus. """
     out = subprocess.check_output(['git', 'status', '--branch', '--porcelain'])
     with tempfile.TemporaryFile() as finput:
         finput.write(out)
@@ -649,6 +656,7 @@ def test_main_stdin(git_repo_parse_stats):
 
 
 def test_find_git_root(git_repo_find_git_root):
+    """ A unit test for gitstatus. """
     expect = os.path.join(os.getcwd(), '.git')
     sub_d = os.path.join(os.getcwd(), 'd_one', 'd_two', 'd_three')
     assert os.path.isdir(sub_d)
@@ -656,14 +664,19 @@ def test_find_git_root(git_repo_find_git_root):
     assert gitstatus.find_git_root() == expect
 
 
-def test_find_git_root_fail():
-    try:
-        temp_d = tempfile.mkdtemp()
-        cwd = os.getcwd()
-        os.chdir(temp_d)
+def test_find_git_root_fail(empty_working_directory):
+    """ A unit test for gitstatus. """
+    with pytest.raises(IOError):
+        gitstatus.find_git_root()
 
-        with pytest.raises(IOError):
-            gitstatus.find_git_root()
-    finally:
-        os.chdir(cwd)
-        shutil.rmtree(temp_d)
+
+def test_git_paths_in_working_tree(git_repo_with_worktree):
+    """ A unit test for gitstatus. """
+    actual_hash = subprocess.check_output(shlex.split('git rev-parse --short HEAD'))
+    actual_hash = actual_hash.decode('utf-8', errors='ignore').strip()
+    assert run_gitstatus() == "{}{} 0 0 0 0 0 0 0 0".format(gitstatus.SYM_PREHASH, actual_hash)
+
+
+def test_main_not_in_repo(empty_working_directory):
+    """ A unit test for gitstatus. """
+    assert run_gitstatus() == ''
