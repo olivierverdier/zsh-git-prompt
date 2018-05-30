@@ -513,6 +513,55 @@ def git_repo_remote_diverged():
         os.chdir(cwd)
 
 
+@pytest.yield_fixture(scope="function")
+def git_repo_find_git_root():
+    """
+    Create a fake git repo with the following properties:
+        - 1 commit
+        - nested folders called, first/second/third
+    """
+    cwd = os.getcwd()
+    folder = tempfile.mkdtemp()
+    cmds = [
+        "git init",
+        "git config user.email 'you@example.com'",
+        "git config user.name 'Your Name'",
+        "first:A single line",
+        "git add first",
+        "git commit -m 'first commit'",
+    ]
+    try:
+        try:
+            shutil.rmtree(folder)
+        except (OSError, IOError):
+            pass
+        #  os.makedirs(folder)
+        subs = os.path.join(folder, 'd_one', 'd_two', 'd_three')
+        print(subs)
+        os.makedirs(subs)
+        os.chdir(folder)
+
+        for cmd in cmds:
+            if re.match(r'\S+:', cmd):
+                assert len(cmd.split(":")) == 2
+                fname, text = cmd.split(":")
+                with open(os.path.join(folder, fname), 'a') as fout:
+                    fout.write(text + '\n')
+            else:
+                with open(os.devnull, 'w') as devnull:
+                    subprocess.check_call(shlex.split(cmd),
+                                          stdout=devnull, stderr=subprocess.STDOUT)
+
+        yield
+
+    finally:
+        try:
+            shutil.rmtree(folder)
+        except (OSError, IOError):
+            pass
+        os.chdir(cwd)
+
+
 def test_branch_fatal():
     """ Simple string to suppress doc warning. """
     cwd = os.getcwd()
@@ -597,3 +646,24 @@ def test_main_stdin(git_repo_parse_stats):
         finput.seek(0)
         out = subprocess.check_output(['python', GIT_STATUS], stdin=finput)
     assert out.decode('utf-8', errors='ignore') == 'master 0 0 3 0 1 2 1 0'
+
+
+def test_find_git_root(git_repo_find_git_root):
+    expect = os.path.join(os.getcwd(), '.git')
+    sub_d = os.path.join(os.getcwd(), 'd_one', 'd_two', 'd_three')
+    assert os.path.isdir(sub_d)
+    os.chdir(sub_d)
+    assert gitstatus.find_git_root() == expect
+
+
+def test_find_git_root_fail():
+    try:
+        temp_d = tempfile.mkdtemp()
+        cwd = os.getcwd()
+        os.chdir(temp_d)
+
+        with pytest.raises(IOError):
+            gitstatus.find_git_root()
+    finally:
+        os.chdir(cwd)
+        shutil.rmtree(temp_d)

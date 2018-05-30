@@ -15,6 +15,26 @@ SYM_NOUPSTREAM = '..'
 SYM_PREHASH = os.environ.get('ZSH_THEME_GIT_PROMPT_HASH_PREFIX', ':')
 
 
+# TODO: Naiev fix, consider work trees too.
+def find_git_root():
+    """
+    Find the nearest enclosing git root.
+    Condition: Will be called from within a git respository.
+
+    Returns: The git project root.
+
+    Raises: IOError - Could not find the directory.
+    """
+    working_d = os.getcwd()
+    while working_d != '/':
+        git_d = os.path.join(working_d, '.git')
+        if os.path.exists(git_d):
+            return git_d
+        working_d = os.path.dirname(working_d)
+
+    raise IOError("No git dir in folder hierarchy.")
+
+
 def parse_stats(lines):
     """
     Computes and returns the following _numbers_ describing the current state.
@@ -87,7 +107,7 @@ def parse_branch(branch):
     upstream = SYM_NOUPSTREAM
     local = 1
     if 'no branch' in branch:
-        with open('.git/HEAD') as fin:
+        with open(os.path.join(GIT_D, 'HEAD')) as fin:
             branch = SYM_PREHASH + fin.read().strip()[:7]
         local = 0
     elif '...' in branch:
@@ -110,7 +130,7 @@ def current_git_status(lines):
     stats = parse_stats(lines[1:])
 
     try:
-        with open('.git/logs/refs/stash') as fin:
+        with open(os.path.join(GIT_D, 'logs', 'refs', 'stash')) as fin:
             stashed = len(fin.readlines())
     except IOError:
         stashed = 0
@@ -144,6 +164,12 @@ def main():
 
     sys.stdout.write(current_git_status(lines))
     sys.stdout.flush()
+
+
+try:
+    GIT_D = find_git_root()
+except IOError:
+    pass
 
 
 if __name__ == "__main__":
