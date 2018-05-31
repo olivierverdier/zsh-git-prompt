@@ -89,6 +89,8 @@ There is now a Haskell implementation as well, which can be four to six times fa
 
 - Define the variable `ZSH_GIT_PROMPT_SHOW_UPSTREAM=1` in order to see the remote branch you are tracking.
 
+- By default, python version invokes `python`. To force a specific python interpreter: `ZSH_GIT_PROMPT_PYBIN=/usr/bin/python2.7`.
+
 - You may redefine the function `git_super_status` (after the `source` statement) to adapt it to your needs (to change the order in which the information is displayed).
 
 - To modify the symbols/colors of the theme, simply redefine the variables at bottom of the
