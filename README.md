@@ -43,7 +43,7 @@ The symbols are as follows:
 |✖n     |there are `n` unmerged files
 |✚n     |there are `n` changed but *unstaged* files
 |…n     |there are `n` untracked files
-|⚑n     |there are `n` stashed files
+|⚑n     |there are `n` stashes on the repo
 
 ### Branch Tracking Symbols
 
@@ -88,6 +88,12 @@ There is now a Haskell implementation as well, which can be four to six times fa
 - Define the variable `ZSH_THEME_GIT_PROMPT_CACHE=1` in order to enable caching.
 
 - Define the variable `ZSH_GIT_PROMPT_SHOW_UPSTREAM=1` in order to see the remote branch you are tracking.
+
+- Define the variable `ZSH_GIT_PROMPT_SHOW_UPSTREAM=2` to show the remote as above but omit the remote branch when its name is equal to the local branch.
+
+Demo:
+
+![upstream example](https://user-images.githubusercontent.com/470400/40869339-52ae782c-65e7-11e8-89a9-2e053b3f8198.png)
 
 - By default, python version invokes `python`. To force a specific python interpreter: `ZSH_GIT_PROMPT_PYBIN=/usr/bin/python2.7`.
 

@@ -54,10 +54,10 @@ git_super_status() {
         if [ "$GIT_LOCAL_ONLY" -ne "0" ]; then
             STATUS="$STATUS$ZSH_THEME_GIT_PROMPT_LOCAL%{${reset_color}%}"
         fi
-        if [ "$GIT_PROMPT_SHOW_UPSTREAM" -eq "1" ] && [ -n "$GIT_UPSTREAM" ] && [ "$GIT_UPSTREAM" != ".." ]; then
+        if [ "$ZSH_GIT_PROMPT_SHOW_UPSTREAM" -gt "0" ] && [ -n "$GIT_UPSTREAM" ] && [ "$GIT_UPSTREAM" != ".." ]; then
             local parts=( "${(s:/:)GIT_UPSTREAM}" )
-            if [ "$parts[2]" = "$GIT_BRANCH" ]; then
-                GIT_UPSTREAM="$parts[1]/"
+            if [ "$ZSH_GIT_PROMPT_SHOW_UPSTREAM" -eq "2" ] && [ "$parts[2]" = "$GIT_BRANCH" ]; then
+                GIT_UPSTREAM="$parts[1]"
             fi
             STATUS="$STATUS$ZSH_THEME_GIT_PROMPT_UPSTREAM_FRONT$GIT_UPSTREAM$ZSH_THEME_GIT_PROMPT_UPSTREAM_END%{${reset_color}%}"
         fi
