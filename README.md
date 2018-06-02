@@ -6,6 +6,16 @@ A `zsh` prompt that displays information about the current git repository. In pa
 
 (an original idea from this [blog post][]).
 
+## Active Fork
+
+This is an active fork of olivierverdier/zsh-git-prompt
+
+The original maintainer is inactive, I aim to maintain and extend the original with new features.
+
+I do not write Haskell, so I can only ensure the `zshrc.sh` and python version are working. Please contribute PRs for Haskell parity. See issue #5 .
+
+A summary of all changes can be found at [Fork Status](https://github.com/starcraftman/zsh-git-prompt/wiki)
+
 ## Examples
 
 The prompt may look like the following:
