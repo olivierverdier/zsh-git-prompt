@@ -95,10 +95,10 @@ git_super_status() {
             clean=0
         fi
         if [ "$clean" -eq "1" ]; then
-            STATUS="$STATUS$ZSH_THEME_GIT_PROMPT_CLEAN"
+            STATUS="$STATUS$ZSH_THEME_GIT_PROMPT_CLEAN%{${reset_color}%}"
         fi
 
-        echo "$STATUS%{${reset_color}%}$ZSH_THEME_GIT_PROMPT_SUFFIX"
+        echo "%{${reset_color}%}$STATUS$ZSH_THEME_GIT_PROMPT_SUFFIX%{${reset_color}%}"
     fi
 }
 
