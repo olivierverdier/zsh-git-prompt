@@ -579,13 +579,51 @@ def empty_working_directory():
             pass
 
 
+@pytest.yield_fixture(scope="function")
+def git_repo_initial_commit():
+    """
+    Create a fake git repo with the following properties:
+        - No commits beyond initialization.
+    """
+    cwd = os.getcwd()
+    folder = tempfile.mkdtemp()
+    cmds = [
+        "git init",
+        "git config user.email 'you@example.com'",
+        "git config user.name 'Your Name'",
+    ]
+    try:
+        os.chdir(folder)
+
+        for cmd in cmds:
+            if re.match(r'\S+:', cmd):
+                assert len(cmd.split(":")) == 2
+                fname, text = cmd.split(":")
+                with open(os.path.join(folder, fname), 'a') as fout:
+                    fout.write(text + '\n')
+            else:
+                with open(os.devnull, 'w') as devnull:
+                    subprocess.check_call(shlex.split(cmd),
+                                          stdout=devnull, stderr=subprocess.STDOUT)
+
+        yield
+
+    finally:
+        try:
+            shutil.rmtree(folder)
+        except (OSError, IOError):
+            pass
+        os.chdir(cwd)
+
+
 def test_branch_fatal(empty_working_directory):
     """ A unit test for gitstatus. """
-    try:
-        gitstatus.main()
-        assert False
-    except SystemExit:
-        pass
+    assert run_gitstatus() == ''
+
+
+def test_branch_initial_commit(git_repo_initial_commit):
+    """ A unit test for gitstatus. """
+    assert run_gitstatus() == 'master 0 0 0 0 0 0 0 1 ' + gitstatus.SYM_NOUPSTREAM
 
 
 def test_branch_master(git_repo_branch_on_master):

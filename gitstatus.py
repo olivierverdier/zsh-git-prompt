@@ -13,8 +13,6 @@ import sys
 SYM_NOUPSTREAM = '..'
 # This symbol appears before hashes when detached
 SYM_PREHASH = os.environ.get('ZSH_THEME_GIT_PROMPT_HASH_PREFIX', ':')
-HEAD_FILE = None
-STASH_FILE = None
 
 
 def find_git_root():
@@ -38,18 +36,14 @@ def find_git_root():
 
 # Example contents of worktree `.git` file, worktree is w1
 #       gitdir: /tmp/zsh-git-prompt/.git/worktrees/w1
-def git_paths():
+def git_paths(git_root):
     """
     Determine the location of the head file and stash file for the current repository.
     This function takes into account if we are currently in a worktree.
     Paths will be absolute to location in the ORIGINAL repository.
 
     Returns: (head_file, stash_file)
-
-    Raises:
-        IOError: CWD is not in a git repository.
     """
-    git_root = find_git_root()
     if os.path.isdir(git_root):
         head_file = os.path.join(git_root, 'HEAD')
     else:  # worktree
@@ -117,7 +111,7 @@ def parse_ahead_behind(branch):
     return behind, ahead
 
 
-def parse_branch(branch):
+def parse_branch(branch, head_file):
     """
     Determine the current state of HEAD (on a branch or checked out on hash).
     Determine if the branch has an upstream set.
@@ -137,13 +131,15 @@ def parse_branch(branch):
 
     upstream = SYM_NOUPSTREAM
     local = 1
-    if 'no branch' in branch:
-        with open(HEAD_FILE) as fin:
-            branch = SYM_PREHASH + fin.read().strip()[:7]
-        local = 0
-    elif '...' in branch:
+    if '...' in branch:
         branch, upstream = branch.split('...')
         local = 0
+    elif 'no branch' in branch:
+        with open(head_file) as fin:
+            branch = SYM_PREHASH + fin.read().strip()[:7]
+        local = 0
+    elif branch.startswith('Initial commit') or branch.startswith('No commits yet'):
+        branch = branch.split(' ')[-1]
 
     return branch, upstream, local
 
@@ -154,14 +150,17 @@ def current_git_status(lines):
     represents the current status of the respoistory.
 
     Returns: The formatted message representing the git repository.
+
+    Raises:
+        IOError: There is no `.git` folder in the current folder hierarchy.
     """
-    # TODO: Use upstream and update tests
-    branch, upstream, local = parse_branch(lines[0])
+    head_file, stash_file = git_paths(find_git_root())
+    branch, upstream, local = parse_branch(lines[0], head_file)
     remote = parse_ahead_behind(lines[0])
     stats = parse_stats(lines[1:])
 
     try:
-        with open(STASH_FILE) as fin:
+        with open(stash_file) as fin:
             stashed = len(fin.readlines())
     except IOError:
         stashed = 0
@@ -190,16 +189,15 @@ def main():
         err = err.decode('utf-8', errors='ignore').strip()
         lines = out.decode('utf-8', errors='ignore').splitlines()
 
-    if 'fatal: not a git repository' in err.lower():
-        sys.exit(0)
+    if err.lower().startswith('fatal: not a git repository'):
+        return
 
-    sys.stdout.write(current_git_status(lines))
-    sys.stdout.flush()
+    try:
+        sys.stdout.write(current_git_status(lines))
+        sys.stdout.flush()
+    except IOError:  # pragma: no cover
+        pass
 
 
 if __name__ == "__main__":
-    try:
-        HEAD_FILE, STASH_FILE = git_paths()
-    except IOError:
-        pass
     main()
