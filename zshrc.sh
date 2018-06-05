@@ -42,6 +42,7 @@ update_current_git_vars() {
     GIT_STASHED=$__CURRENT_GIT_STATUS[8]
     GIT_LOCAL_ONLY=$__CURRENT_GIT_STATUS[9]
     GIT_UPSTREAM=$__CURRENT_GIT_STATUS[10]
+    GIT_REBASE=$__CURRENT_GIT_STATUS[11]
 }
 
 git_super_status() {
@@ -50,6 +51,10 @@ git_super_status() {
     if [ -n "$__CURRENT_GIT_STATUS" ]; then
         local STATUS="$ZSH_THEME_GIT_PROMPT_PREFIX$ZSH_THEME_GIT_PROMPT_BRANCH$GIT_BRANCH%{${reset_color}%}"
         local clean=1
+
+        if [ "$GIT_REBASE" != "0" ]; then
+            STATUS="$STATUS$ZSH_THEME_GIT_PROMPT_REBASE$GIT_REBASE%{${reset_color}%}"
+        fi
 
         if [ "$GIT_LOCAL_ONLY" -ne "0" ]; then
             STATUS="$STATUS$ZSH_THEME_GIT_PROMPT_LOCAL%{${reset_color}%}"
@@ -140,5 +145,6 @@ ZSH_THEME_GIT_PROMPT_LOCAL=" L"
 # The remote branch will be shown between these two
 ZSH_THEME_GIT_PROMPT_UPSTREAM_FRONT=" {%{$fg[blue]%}"
 ZSH_THEME_GIT_PROMPT_UPSTREAM_END="%{${reset_color}%}}"
+ZSH_THEME_GIT_PROMPT_REBASE="%{$fg_bold[magenta]%}|REBASE%{${reset_color}%} "
 
 # vim: set filetype=zsh:

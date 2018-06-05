@@ -9,7 +9,7 @@ import os
 import re
 import shlex
 import shutil
-import subprocess
+import subprocess as sub
 import tempfile
 
 import pytest
@@ -26,7 +26,7 @@ def run_gitstatus():
     Returns:
         The output of gitstatus.py in the CWD.
     """
-    return subprocess.check_output(['python', GIT_STATUS]).decode('utf-8', errors='ignore')
+    return sub.check_output(['python', GIT_STATUS]).decode('utf-8', errors='ignore')
 
 
 @pytest.yield_fixture(scope="function")
@@ -72,8 +72,8 @@ def git_repo_parse_stats():
                     fout.write(text + '\n')
             else:
                 with open(os.devnull, 'w') as devnull:
-                    subprocess.check_call(shlex.split(cmd),
-                                          stdout=devnull, stderr=subprocess.STDOUT)
+                    sub.check_call(shlex.split(cmd),
+                                   stdout=devnull, stderr=sub.STDOUT)
 
         yield
 
@@ -131,9 +131,9 @@ def git_repo_parse_stats_only_conflicts():
             else:
                 try:
                     with open(os.devnull, 'w') as devnull:
-                        subprocess.check_call(shlex.split(cmd),
-                                              stdout=devnull, stderr=subprocess.STDOUT)
-                except subprocess.CalledProcessError:
+                        sub.check_call(shlex.split(cmd),
+                                       stdout=devnull, stderr=sub.STDOUT)
+                except sub.CalledProcessError:
                     pass
 
         yield
@@ -182,8 +182,8 @@ def git_repo_branch_on_hash():
                     fout.write(text + '\n')
             else:
                 with open(os.devnull, 'w') as devnull:
-                    subprocess.check_call(shlex.split(cmd),
-                                          stdout=devnull, stderr=subprocess.STDOUT)
+                    sub.check_call(shlex.split(cmd),
+                                   stdout=devnull, stderr=sub.STDOUT)
 
         yield
 
@@ -226,8 +226,8 @@ def git_repo_branch_on_master():
                     fout.write(text + '\n')
             else:
                 with open(os.devnull, 'w') as devnull:
-                    subprocess.check_call(shlex.split(cmd),
-                                          stdout=devnull, stderr=subprocess.STDOUT)
+                    sub.check_call(shlex.split(cmd),
+                                   stdout=devnull, stderr=sub.STDOUT)
 
         yield
 
@@ -267,8 +267,8 @@ def git_repo_branch_local_only():
                     fout.write(text + '\n')
             else:
                 with open(os.devnull, 'w') as devnull:
-                    subprocess.check_call(shlex.split(cmd),
-                                          stdout=devnull, stderr=subprocess.STDOUT)
+                    sub.check_call(shlex.split(cmd),
+                                   stdout=devnull, stderr=sub.STDOUT)
 
         yield
 
@@ -319,8 +319,8 @@ def git_repo_remote_ahead():
                     fout.write(text + '\n')
             else:
                 with open(os.devnull, 'w') as devnull:
-                    subprocess.check_call(shlex.split(cmd),
-                                          stdout=devnull, stderr=subprocess.STDOUT)
+                    sub.check_call(shlex.split(cmd),
+                                   stdout=devnull, stderr=sub.STDOUT)
 
         yield
 
@@ -376,8 +376,8 @@ def git_repo_remote_behind():
                     fout.write(text + '\n')
             else:
                 with open(os.devnull, 'w') as devnull:
-                    subprocess.check_call(shlex.split(cmd),
-                                          stdout=devnull, stderr=subprocess.STDOUT)
+                    sub.check_call(shlex.split(cmd),
+                                   stdout=devnull, stderr=sub.STDOUT)
 
         yield
 
@@ -436,8 +436,8 @@ def git_repo_remote_diverged():
                     fout.write(text + '\n')
             else:
                 with open(os.devnull, 'w') as devnull:
-                    subprocess.check_call(shlex.split(cmd),
-                                          stdout=devnull, stderr=subprocess.STDOUT)
+                    sub.check_call(shlex.split(cmd),
+                                   stdout=devnull, stderr=sub.STDOUT)
 
         yield
 
@@ -483,8 +483,8 @@ def git_repo_find_git_root():
                     fout.write(text + '\n')
             else:
                 with open(os.devnull, 'w') as devnull:
-                    subprocess.check_call(shlex.split(cmd),
-                                          stdout=devnull, stderr=subprocess.STDOUT)
+                    sub.check_call(shlex.split(cmd),
+                                   stdout=devnull, stderr=sub.STDOUT)
 
         yield
 
@@ -526,15 +526,6 @@ def git_repo_with_worktree():
         "git worktree add --detach %s tree" % (folder_tree),
     ]
     try:
-        try:
-            shutil.rmtree(folder)
-        except (OSError, IOError):
-            pass
-        try:
-            shutil.rmtree(folder_tree)
-        except (OSError, IOError):
-            pass
-        os.makedirs(folder)
         os.chdir(folder)
 
         for cmd in cmds:
@@ -545,8 +536,8 @@ def git_repo_with_worktree():
                     fout.write(text + '\n')
             else:
                 with open(os.devnull, 'w') as devnull:
-                    subprocess.check_call(shlex.split(cmd),
-                                          stdout=devnull, stderr=subprocess.STDOUT)
+                    sub.check_call(shlex.split(cmd),
+                                   stdout=devnull, stderr=sub.STDOUT)
 
         os.chdir(folder_tree)
         yield
@@ -603,8 +594,66 @@ def git_repo_initial_commit():
                     fout.write(text + '\n')
             else:
                 with open(os.devnull, 'w') as devnull:
-                    subprocess.check_call(shlex.split(cmd),
-                                          stdout=devnull, stderr=subprocess.STDOUT)
+                    sub.check_call(shlex.split(cmd),
+                                   stdout=devnull, stderr=sub.STDOUT)
+
+        yield
+
+    finally:
+        try:
+            shutil.rmtree(folder)
+        except (OSError, IOError):
+            pass
+        os.chdir(cwd)
+
+
+@pytest.yield_fixture(scope="function")
+def git_repo_in_rebase():
+    """
+    Create a fake git repo with the following properties:
+        - master branch with 3 commits
+        - dev branch that has 3 commits, last two differ from master
+        - dev is rebasing master, 2 commits need resolving
+    """
+    cwd = os.getcwd()
+    folder = tempfile.mkdtemp()
+    cmds = [
+        "git init",
+        "git config user.email 'you@example.com'",
+        "git config user.name 'Your Name'",
+        "first:A single line",
+        "git add first",
+        "git commit -m 'first commit'",
+        "git branch dev",
+        "first:the second master line here",
+        "git add first",
+        "git commit -m 'second master commit'",
+        "first:there is also a third master",
+        "git add first",
+        "git commit -m 'third master commit'",
+        "git checkout dev",
+        "first:Second line",
+        "git add first",
+        "git commit -m 'second dev commit'",
+        "first:Third line\nForuth line",
+        "git add first",
+        "git commit -m 'third dev commit'",
+        "git rebase master",
+    ]
+    try:
+        os.chdir(folder)
+
+        for cmd in cmds:
+            if re.match(r'\S+:', cmd):
+                assert len(cmd.split(":")) == 2
+                fname, text = cmd.split(":")
+                with open(os.path.join(folder, fname), 'a') as fout:
+                    fout.write(text + '\n')
+            else:
+                with open(os.devnull, 'w') as devnull:
+                    proc = sub.Popen(shlex.split(cmd),
+                                     stdout=devnull, stderr=sub.STDOUT)
+                    proc.wait()
 
         yield
 
@@ -623,49 +672,50 @@ def test_branch_fatal(empty_working_directory):
 
 def test_branch_initial_commit(git_repo_initial_commit):
     """ A unit test for gitstatus. """
-    assert run_gitstatus() == 'master 0 0 0 0 0 0 0 1 ' + gitstatus.SYM_NOUPSTREAM
+    assert run_gitstatus() == 'master 0 0 0 0 0 0 0 1 {} 0'.format(gitstatus.SYM_NOUPSTREAM)
 
 
 def test_branch_master(git_repo_branch_on_master):
     """ A unit test for gitstatus. """
-    assert run_gitstatus() == 'master 0 0 0 0 0 0 0 1 ' + gitstatus.SYM_NOUPSTREAM
+    assert run_gitstatus() == 'master 0 0 0 0 0 0 0 1 {} 0'.format(gitstatus.SYM_NOUPSTREAM)
 
 
 def test_branch_hash(git_repo_branch_on_hash):
     """ A unit test for gitstatus. """
-    actual_hash = subprocess.check_output(shlex.split('git rev-parse --short HEAD'))
+    actual_hash = sub.check_output(shlex.split('git rev-parse --short HEAD'))
     actual_hash = actual_hash.decode('utf-8', errors='ignore').strip()
-    assert run_gitstatus() == ':{} 0 0 0 0 0 0 0 0 {}'.format(actual_hash, gitstatus.SYM_NOUPSTREAM)
+    assert run_gitstatus() == ':{} 0 0 0 0 0 0 0 0 {} 0'.format(actual_hash,
+                                                                gitstatus.SYM_NOUPSTREAM)
 
 
 def test_branch_local(git_repo_branch_local_only):
     """ A unit test for gitstatus. """
-    assert run_gitstatus() == 'master 0 0 0 0 0 0 0 1 ' + gitstatus.SYM_NOUPSTREAM
+    assert run_gitstatus() == 'master 0 0 0 0 0 0 0 1 {} 0'.format(gitstatus.SYM_NOUPSTREAM)
 
 
 def test_parse_stats_no_conflicts(git_repo_parse_stats):
     """ A unit test for gitstatus. """
-    assert run_gitstatus() == 'master 0 0 3 0 1 2 1 0 up/master'
+    assert run_gitstatus() == 'master 0 0 3 0 1 2 1 0 up/master 0'
 
 
 def test_parse_stats_only_conflicts(git_repo_parse_stats_only_conflicts):
     """ A unit test for gitstatus. """
-    assert run_gitstatus() == 'master 1 1 0 1 0 0 0 0 up/master'
+    assert run_gitstatus() == 'master 1 1 0 1 0 0 0 0 up/master 0'
 
 
 def test_remote_ahead(git_repo_remote_ahead):
     """ A unit test for gitstatus. """
-    assert run_gitstatus() == 'master 0 1 0 0 0 0 0 0 up/master'
+    assert run_gitstatus() == 'master 0 1 0 0 0 0 0 0 up/master 0'
 
 
 def test_remote_behind(git_repo_remote_behind):
     """ A unit test for gitstatus. """
-    assert run_gitstatus() == 'master 1 0 0 0 0 0 0 0 up/master'
+    assert run_gitstatus() == 'master 1 0 0 0 0 0 0 0 up/master 0'
 
 
 def test_remote_diverged(git_repo_remote_diverged):
     """ A unit test for gitstatus. """
-    assert run_gitstatus() == 'master 1 1 0 0 0 0 0 0 up/master'
+    assert run_gitstatus() == 'master 1 1 0 0 0 0 0 0 up/master 0'
 
 
 def test_parse_ahead_behind_only_ahead():
@@ -685,12 +735,12 @@ def test_parse_ahead_behind_both():
 
 def test_main_stdin(git_repo_parse_stats):
     """ A unit test for gitstatus. """
-    out = subprocess.check_output(['git', 'status', '--branch', '--porcelain'])
+    out = sub.check_output(['git', 'status', '--branch', '--porcelain'])
     with tempfile.TemporaryFile() as finput:
         finput.write(out)
         finput.seek(0)
-        out = subprocess.check_output(['python', GIT_STATUS], stdin=finput)
-    assert out.decode('utf-8', errors='ignore') == 'master 0 0 3 0 1 2 1 0 up/master'
+        out = sub.check_output(['python', GIT_STATUS], stdin=finput)
+    assert out.decode('utf-8', errors='ignore') == 'master 0 0 3 0 1 2 1 0 up/master 0'
 
 
 def test_find_git_root(git_repo_find_git_root):
@@ -710,12 +760,19 @@ def test_find_git_root_fail(empty_working_directory):
 
 def test_git_paths_in_working_tree(git_repo_with_worktree):
     """ A unit test for gitstatus. """
-    actual_hash = subprocess.check_output(shlex.split('git rev-parse --short HEAD'))
+    actual_hash = sub.check_output(shlex.split('git rev-parse --short HEAD'))
     actual_hash = actual_hash.decode('utf-8', errors='ignore').strip()
-    assert run_gitstatus() == "{}{} 0 0 0 0 0 0 0 0 {}".format(gitstatus.SYM_PREHASH, actual_hash,
-                                                               gitstatus.SYM_NOUPSTREAM)
+    assert run_gitstatus() == "{}{} 0 0 0 0 0 0 0 0 {} 0".format(gitstatus.SYM_PREHASH, actual_hash,
+                                                                 gitstatus.SYM_NOUPSTREAM)
 
 
 def test_main_not_in_repo(empty_working_directory):
     """ A unit test for gitstatus. """
     assert run_gitstatus() == ''
+
+
+def test_rebase_in_progress(git_repo_in_rebase):
+    """ A unit test for gitstatus. """
+    actual_hash = sub.check_output(shlex.split('git rev-parse --short HEAD'))
+    actual_hash = actual_hash.decode('utf-8', errors='ignore').strip()
+    assert run_gitstatus() == ':{} 0 0 0 1 0 0 0 0 .. 1/2'.format(actual_hash)

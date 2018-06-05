@@ -144,6 +144,24 @@ def parse_branch(branch, head_file):
     return branch, upstream, local
 
 
+def parse_rebase(rebase_d):
+    """
+    Determine the rebase status of this repostitory and return it.
+
+    Returns:
+        - "0": No active rebase.
+        - "1/4": Rebase in progress, commit 1 of 4.
+    """
+    try:
+        with open(os.path.join(rebase_d, 'next')) as next_file,\
+                open(os.path.join(rebase_d, 'last')) as last_file:
+            rebase = next_file.read().strip() + '/' + last_file.read().strip()
+    except IOError:
+        rebase = '0'
+
+    return rebase
+
+
 def current_git_status(lines):
     """
     Parse git status procelain output and return the formatted text that
@@ -158,6 +176,7 @@ def current_git_status(lines):
     branch, upstream, local = parse_branch(lines[0], head_file)
     remote = parse_ahead_behind(lines[0])
     stats = parse_stats(lines[1:])
+    rebase = parse_rebase(os.path.join(os.path.dirname(head_file), 'rebase-apply'))
 
     try:
         with open(stash_file) as fin:
@@ -165,7 +184,7 @@ def current_git_status(lines):
     except IOError:
         stashed = 0
 
-    values = [str(x) for x in (branch,) + remote + stats + (stashed, local, upstream)]
+    values = [str(x) for x in (branch,) + remote + stats + (stashed, local, upstream, rebase)]
 
     return ' '.join(values)
 
