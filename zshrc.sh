@@ -42,7 +42,8 @@ update_current_git_vars() {
     GIT_STASHED=$__CURRENT_GIT_STATUS[8]
     GIT_LOCAL_ONLY=$__CURRENT_GIT_STATUS[9]
     GIT_UPSTREAM=$__CURRENT_GIT_STATUS[10]
-    GIT_REBASE=$__CURRENT_GIT_STATUS[11]
+    GIT_MERGING=$__CURRENT_GIT_STATUS[11]
+    GIT_REBASE=$__CURRENT_GIT_STATUS[12]
 }
 
 git_super_status() {
@@ -54,12 +55,13 @@ git_super_status() {
 
         if [ "$GIT_REBASE" != "0" ]; then
             STATUS="$STATUS$ZSH_THEME_GIT_PROMPT_REBASE$GIT_REBASE%{${reset_color}%}"
+        elif [ "$GIT_MERGING" -ne "0" ]; then
+            STATUS="$STATUS$ZSH_THEME_GIT_PROMPT_MERGING%{${reset_color}%}"
         fi
 
         if [ "$GIT_LOCAL_ONLY" -ne "0" ]; then
             STATUS="$STATUS$ZSH_THEME_GIT_PROMPT_LOCAL%{${reset_color}%}"
-        fi
-        if [ "$ZSH_GIT_PROMPT_SHOW_UPSTREAM" -gt "0" ] && [ -n "$GIT_UPSTREAM" ] && [ "$GIT_UPSTREAM" != ".." ]; then
+        elif [ "$ZSH_GIT_PROMPT_SHOW_UPSTREAM" -gt "0" ] && [ -n "$GIT_UPSTREAM" ] && [ "$GIT_UPSTREAM" != ".." ]; then
             local parts=( "${(s:/:)GIT_UPSTREAM}" )
             if [ "$ZSH_GIT_PROMPT_SHOW_UPSTREAM" -eq "2" ] && [ "$parts[2]" = "$GIT_BRANCH" ]; then
                 GIT_UPSTREAM="$parts[1]"
@@ -145,6 +147,7 @@ ZSH_THEME_GIT_PROMPT_LOCAL=" L"
 # The remote branch will be shown between these two
 ZSH_THEME_GIT_PROMPT_UPSTREAM_FRONT=" {%{$fg[blue]%}"
 ZSH_THEME_GIT_PROMPT_UPSTREAM_END="%{${reset_color}%}}"
+ZSH_THEME_GIT_PROMPT_MERGING="%{$fg_bold[magenta]%}|MERGING%{${reset_color}%}"
 ZSH_THEME_GIT_PROMPT_REBASE="%{$fg_bold[magenta]%}|REBASE%{${reset_color}%} "
 
 # vim: set filetype=zsh:

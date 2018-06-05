@@ -46,25 +46,30 @@ The symbols are as follows:
 
 ### Local Status Symbols
 
-|Symbol |Meaning
-|------ |-------
-|✔      |repository clean
-|●n     |there are `n` staged files
-|✖n     |there are `n` unmerged files
-|✚n     |there are `n` changed but *unstaged* files
-|…n     |there are `n` untracked files
-|⚑n     |there are `n` stashes on the repo
+Symbol | Meaning
+------ | -------
+✔      | repository clean
+●n     | there are `n` staged files
+✖n     | there are `n` unmerged files
+✚n     | there are `n` changed but *unstaged* files
+…n     | there are `n` untracked files
+⚑n     | there are `n` stashes on the repo
 
 ### Branch Tracking Symbols
 
-Symbol  |Meaning
-------- |-------
-↑·n     |ahead of remote by `n` commits
-↓·n     |behind remote by `n` commits
-↓·m↑·n  |branches diverged, other by `m` commits, yours by `n` commits
+Symbol  | Meaning
+------- | -------
+↑·n     | ahead of remote by `n` commits
+↓·n     | behind remote by `n` commits
+↓·m↑·n  | branches diverged, other by `m` commits, yours by `n` commits
 
 
-### Branch Symbol
+### Branch States
+
+- **master|✔**               -- On a branch (master), clean
+- **:3adh57m|✔**             -- Checked out a hash
+- **dev|MERGING|✖1**         -- Doing a merge onto dev, 1 conflict
+- **:h2x78q0|REBASE 1/3|✖2** -- Doing a rebase, on first or 3 commits, 2 conflicts
 
 When the branch name starts with a colon `:`, it means it’s actually a hash, not a branch.
 It should be pretty clear, unless you name your branches like hashes :-)
