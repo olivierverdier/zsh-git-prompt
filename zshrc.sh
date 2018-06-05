@@ -53,7 +53,7 @@ git_super_status() {
         local STATUS="$ZSH_THEME_GIT_PROMPT_PREFIX$ZSH_THEME_GIT_PROMPT_BRANCH$GIT_BRANCH%{${reset_color}%}"
         local clean=1
 
-        if [ "$GIT_REBASE" != "0" ]; then
+        if [ -n "$GIT_REBASE" ] && [ "$GIT_REBASE" != "0" ]; then
             STATUS="$STATUS$ZSH_THEME_GIT_PROMPT_REBASE$GIT_REBASE%{${reset_color}%}"
         elif [ "$GIT_MERGING" -ne "0" ]; then
             STATUS="$STATUS$ZSH_THEME_GIT_PROMPT_MERGING%{${reset_color}%}"
