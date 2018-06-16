@@ -114,7 +114,7 @@ def parse_ahead_behind(branch):
         for part in branch[branch.rindex('[') + 1:-1].split(','):
             if 'ahead' in part:
                 ahead = int(part.replace('ahead ', ''))
-            else:
+            elif 'behind' in part:
                 behind = int(part.replace('behind ', ''))
 
     return ahead, behind

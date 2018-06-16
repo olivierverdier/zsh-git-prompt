@@ -723,6 +723,64 @@ def git_repo_in_rebase():
         os.chdir(cwd)
 
 
+@pytest.yield_fixture(scope="function")
+def git_repo_upstream_gone():
+    """
+    Create a fake git repo with the following properties:
+        - create a repo with 2 commits and a 'dev' branch
+        - copy repo to create an upstream
+        - set 'dev' branch to track 'up/dev'
+        - delete upstream dev
+    """
+    cwd = os.getcwd()
+    folder = tempfile.mkdtemp()
+    folder_up = folder + "_upstream"
+    cmds = [
+        "git init",
+        "git config user.email 'you@example.com'",
+        "git config user.name 'Your Name'",
+        "first:A single line",
+        "git add first",
+        "git commit -m 'first commit'",
+        "first:Second line",
+        "git add first",
+        "git commit -m 'second commit'",
+        "cp -R %s %s" % (folder, folder_up),
+        "git remote add -f up %s" % folder_up,
+        "git branch dev",
+        "git checkout dev",
+        "git push -u up dev",
+        "git fetch up",
+        "git push up :dev",
+    ]
+    try:
+        os.chdir(folder)
+
+        for cmd in cmds:
+            if re.match(r'\S+:', cmd):
+                assert len(cmd.split(":")) == 2
+                fname, text = cmd.split(":")
+                with open(os.path.join(folder, fname), 'a') as fout:
+                    fout.write(text + '\n')
+            else:
+                with open(os.devnull, 'w') as devnull:
+                    sub.check_call(shlex.split(cmd),
+                                   stdout=devnull, stderr=sub.STDOUT)
+
+        yield
+
+    finally:
+        try:
+            shutil.rmtree(folder)
+        except (OSError, IOError):
+            pass
+        try:
+            shutil.rmtree(folder_up)
+        except (OSError, IOError):
+            pass
+        os.chdir(cwd)
+
+
 # ----------
 # Unit Tests
 # ----------
@@ -915,3 +973,8 @@ def test_gitstatus_rebasing(git_repo_in_rebase):
     actual_hash = sub.check_output(shlex.split('git rev-parse --short HEAD'))
     actual_hash = actual_hash.decode('utf-8', errors='ignore').strip()
     assert run_gitstatus() == ':{} 0 0 0 1 0 0 0 0 .. 0 1/2'.format(actual_hash)
+
+
+def test_gitstatus_upstream_gone(git_repo_upstream_gone):
+    """ A unit test for gitstatus. """
+    assert run_gitstatus() == 'dev 0 0 0 0 0 0 0 0 up/dev 0 0'
