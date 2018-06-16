@@ -117,7 +117,7 @@ def parse_ahead_behind(branch):
             else:
                 behind = int(part.replace('behind ', ''))
 
-    return behind, ahead
+    return ahead, behind
 
 
 def parse_stats(lines):

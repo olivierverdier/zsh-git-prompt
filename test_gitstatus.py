@@ -555,8 +555,8 @@ def git_repo_remote_diverged():
     """
     Create a fake git repo with the following properties:
         - main repo has 3 commits
-        - upstream repo has 3 commits
-        - main repo has upstream set and is has diverged by 1 commit each way
+        - upstream repo has 4 commits
+        - main repo has upstream set and is has diverged 2 behind, 1 ahead
     """
     cwd = os.getcwd()
     folder = tempfile.mkdtemp()
@@ -574,10 +574,13 @@ def git_repo_remote_diverged():
         "first:third line",
         "git add first",
         "git commit -m 'third commit'",
+        "first:fourth line",
+        "git add first",
+        "git commit -m 'fourth commit'",
         "cp -R %s %s" % (folder, folder_up),
         "git remote add -f up %s" % folder_up,
         "git branch --set-upstream-to=up/master",
-        "git reset --hard HEAD~1",
+        "git reset --hard HEAD~2",
         "first:different third line",
         "git add first",
         "git commit -m 'different third commit'",
@@ -720,9 +723,9 @@ def git_repo_in_rebase():
         os.chdir(cwd)
 
 
-# ----------------
-# Functional Tests
-# ----------------
+# ----------
+# Unit Tests
+# ----------
 def test_find_git_root(git_repo_find_git_root):
     """ A unit test for gitstatus. """
     expect = os.path.join(os.getcwd(), '.git')
@@ -785,17 +788,17 @@ _R changed4"""
 
 def test_parse_ahead_behind_only_ahead():
     """ A unit test for gitstatus. """
-    assert gitstatus.parse_ahead_behind("## master...up/master [ahead 2]") == (0, 2)
+    assert gitstatus.parse_ahead_behind("## master...up/master [ahead 2]") == (2, 0)
 
 
 def test_parse_ahead_behind_only_behind():
     """ A unit test for gitstatus. """
-    assert gitstatus.parse_ahead_behind("## master...up/master [behind 1]") == (1, 0)
+    assert gitstatus.parse_ahead_behind("## master...up/master [behind 1]") == (0, 1)
 
 
 def test_parse_ahead_behind_both():
     """ A unit test for gitstatus. """
-    assert gitstatus.parse_ahead_behind("## master...up/master [ahead 2, behind 1]") == (1, 2)
+    assert gitstatus.parse_ahead_behind("## master...up/master [ahead 2, behind 1]") == (2, 1)
 
 
 def test_parse_branch_on_local_branch():
@@ -841,9 +844,9 @@ def test_rebase_progress_no_rebase(git_repo_initial_commit):
     assert gitstatus.rebase_progress(rebase_dir) == '0'
 
 
-# -----------------
-# Integration Tests
-# -----------------
+# ----------------
+# Functional Tests
+# ----------------
 def test_gitstatus_no_repo(empty_working_directory):
     """ A unit test for gitstatus. """
     assert run_gitstatus() == ''
@@ -879,17 +882,17 @@ def test_gitstatus_parse_stats_only_conflicts(git_repo_parse_stats_only_conflict
 
 def test_gitstatus_remote_ahead(git_repo_remote_ahead):
     """ A unit test for gitstatus. """
-    assert run_gitstatus() == 'master 0 1 0 0 0 0 0 0 up/master 0 0'
+    assert run_gitstatus() == 'master 1 0 0 0 0 0 0 0 up/master 0 0'
 
 
 def test_gitstatus_remote_behind(git_repo_remote_behind):
     """ A unit test for gitstatus. """
-    assert run_gitstatus() == 'master 1 0 0 0 0 0 0 0 up/master 0 0'
+    assert run_gitstatus() == 'master 0 1 0 0 0 0 0 0 up/master 0 0'
 
 
 def test_gitstatus_remote_diverged(git_repo_remote_diverged):
     """ A unit test for gitstatus. """
-    assert run_gitstatus() == 'master 1 1 0 0 0 0 0 0 up/master 0 0'
+    assert run_gitstatus() == 'master 1 2 0 0 0 0 0 0 up/master 0 0'
 
 
 def test_gitstatus_stdin(git_repo_parse_stats):
