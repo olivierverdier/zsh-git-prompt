@@ -43,6 +43,11 @@ function chpwd_update_git_vars() {
 function update_current_git_vars() {
     local __CURRENT_GIT_STATUS
 
+    if [[ $PWD == $HOME/git/chromium/* ]]; then
+      ZSH_GIT_PROMPT=""
+      return
+    fi
+
     if [[ "$GIT_PROMPT_EXECUTABLE" == "python" ]]; then
         local gitstatus="$__GIT_PROMPT_DIR/gitstatus.py"
         _GIT_STATUS=`python ${gitstatus} 2>/dev/null`
