@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 from __future__ import print_function
 import sys, os
 
@@ -291,8 +291,8 @@ def startServer():
 
         try:
              pid = os.fork()	# Fork a second child.
-        except OSError, e:
-             raise Exception, "%s [%d]" % (e.strerror, e.errno)
+        except OSError as e:
+             raise Exception("%s [%d]" % (e.strerror, e.errno))
 
         if pid > 0:
             os._exit(0)
@@ -337,8 +337,8 @@ def request(cmd):
         traceback.print_exc()
         return None
 
-    conn.send(cmd)
-    return conn.recv(8196)
+    conn.send(cmd.encode('utf8'))
+    return conn.recv(8196).decode('utf8')
 
 
 def get(path):
