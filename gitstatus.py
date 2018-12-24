@@ -72,6 +72,7 @@ class Command(object):
 def gitBase(path):
     os.chdir(path)
     gitsym, error = Command(['git', 'rev-parse', '--show-toplevel', '--symbolic-full-name', 'HEAD']).run(0.01)
+    gitsym = gitsym.decode('utf8')
 
     error_string = error.decode('utf-8')
     if 'fatal: Not a git repository' in error_string or len(gitsym) == 0:
@@ -79,7 +80,7 @@ def gitBase(path):
 
     path = gitsym.split("\n")[0]
     branch = gitsym.split("\n")[1]
-    branch = branch.decode("utf-8").strip()[11:]
+    branch = branch.strip()[11:]
 
     return path, branch
 
@@ -172,6 +173,7 @@ class Repo:
         return self.stat
 
 
+
 def serverIsRunning():
     conn = socket.socket( socket.AF_UNIX, socket.SOCK_STREAM )
     try:
@@ -198,40 +200,45 @@ class Server:
         server.listen(5)
 
         commands = {}
-        commands["ping"] = lambda conn, data: conn.send(str(os.getpid()))
-        def getCommand(conn, data):
+        commands["ping"] = lambda send, data: send(str(os.getpid()))
+        def getCommand(send, data):
             path = data[4:]
             eprint(self.repos)
             stat = self.register(path)
             if stat == "": stat = "fail"
-            conn.send(stat)
+            send(stat)
         commands["get"] = getCommand
 
-        def infoCommand(conn, data):
+        def infoCommand(send, data):
             reply = "size: " + str(len(self.repos)) + "\n"
             reply += "content: " + str(self.repos.keys())
-            conn.send(reply)
+            send(reply)
         commands["info"] = infoCommand
 
-        def killCommand(conn, data):
-            conn.send("shutting down server")
+        def killCommand(send, data):
+            send("shutting down server")
             sys.exit(0)
         commands["kill"] = killCommand
 
         eprint("run server")
         while True:
           conn, addr = server.accept()
+
+          def send(msg):
+            conn.send(msg.encode('utf8'))
+
           while True:
             data = conn.recv( 8096 )
             if not data:
                 break
             else:
+                data = data.decode('utf8')
                 eprint("received command " + data)
                 cmd = data.split(" ")[0]
                 if not cmd in commands:
-                    conn.send("unknown command, allowed: " + ", ".join(commands.keys()))
+                    send("unknown command, allowed: " + ", ".join(commands.keys()))
                 else:
-                    commands[cmd](conn, data)
+                    commands[cmd](send, data)
             eprint("---")
         eprint("stopping server")
 
