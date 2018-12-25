@@ -17,12 +17,24 @@ hash_prefix = ':'
 enable_watchdog = False
 maxwatch = 1000
 maxwatch_repo = 400
-update_timeout = 0.0
+update_timeout = 0.5
+buffer_size = 64
+
+if enable_watchdog:
+    from watchdog.observers import Observer
+    from watchdog.events import LoggingEventHandler
+    from watchdog.events import FileSystemEventHandler
 
 
-from watchdog.observers import Observer
-from watchdog.events import LoggingEventHandler
-from watchdog.events import FileSystemEventHandler
+    class MyHandler(FileSystemEventHandler):
+        def __init__(self, repo):
+            self.repo = repo
+
+        def on_modified(self, event):
+            print("event " + str(event))
+            print(event.src_path)
+            print("invalidate " + self.repo.path)
+            self.repo.needs_update = True
 
 # global variables
 watch_count = 0
@@ -91,6 +103,7 @@ def get_git_base_dir(path):
 
 
 def git_status(path):
+    eprint("get status of " + path)
     path, branch = get_git_base_dir(path)
     if(path == None):
         return ""
@@ -147,16 +160,6 @@ def git_status(path):
 
 
 
-class MyHandler(FileSystemEventHandler):
-    def __init__(self, repo):
-        self.repo = repo
-
-    def on_modified(self, event):
-        print("event " + str(event))
-        print(event.src_path)
-        print("invalidate " + self.repo.path)
-        self.repo.needs_update = True
-
 class Repo:
     def __init__(self):
         self.path = None
@@ -186,20 +189,23 @@ def server_is_running():
 
 class Server:
     def __init__(self):
-        self.observer = Observer()
         self.repos = {}
+        if enable_watchdog:
+            self.observer = Observer()
 
     def start(self):
         if server_is_running():
             return
 
-        self.observer.start()
+        if enable_watchdog:
+            self.observer.start()
+
         if os.path.exists( sockfile ):
           os.remove( sockfile )
 
-        server = socket.socket( socket.AF_UNIX, socket.SOCK_STREAM )
-        server.bind(sockfile)
-        server.listen(5)
+        sock = socket.socket( socket.AF_UNIX, socket.SOCK_STREAM )
+        sock.bind(sockfile)
+        sock.listen(5)
 
         commands = {}
         commands["ping"] = lambda send, data: send(str(os.getpid()))
@@ -224,13 +230,13 @@ class Server:
 
         eprint("run server")
         while True:
-          conn, addr = server.accept()
+          conn, addr = sock.accept()
 
           def send(msg):
             conn.send(msg.encode('utf8'))
 
           while True:
-            data = conn.recv( 8096 )
+            data = conn.recv( buffer_size )
             if not data:
                 break
             else:
@@ -260,17 +266,18 @@ class Server:
             self.repos[path] = r
             r.path = path
 
-            dir_count = count_dirs(path, max=maxwatch_repo)
-            eprint("number of directories: " + str(dir_count))
-            if dir_count < maxwatch_repo and watch_count + dir_count < maxwatch:
-                eprint("observe file system changes")
-                r.handler = MyHandler(r)
-                try:
-                    self.observer.schedule(r.handler, path, recursive=True)
-                    watch_count += dir_count
-                except OSError as e:
-                    traceback.print_exc()
-                    r.handler = None
+            if enable_watchdog:
+                dir_count = count_dirs(path, max=maxwatch_repo)
+                eprint("number of directories: " + str(dir_count))
+                if dir_count < maxwatch_repo and watch_count + dir_count < maxwatch:
+                    eprint("observe file system changes")
+                    r.handler = MyHandler(r)
+                    try:
+                        self.observer.schedule(r.handler, path, recursive=True)
+                        watch_count += dir_count
+                    except OSError as e:
+                        traceback.print_exc()
+                        r.handler = None
 
             return r.status()
 
@@ -347,7 +354,7 @@ def request(cmd):
         return None
 
     conn.send(cmd.encode('utf8'))
-    return conn.recv(8196).decode('utf8')
+    return conn.recv(buffer_size).decode('utf8')
 
 
 def request_status(path):
