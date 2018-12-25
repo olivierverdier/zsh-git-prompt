@@ -11,34 +11,38 @@ import tempfile
 from subprocess import Popen, PIPE, check_output, STDOUT
 from threading import Thread
 
+
+# change this symbol to whatever you prefer
+hash_prefix = ':'
+enable_watchdog = False
+maxwatch = 1000
+maxwatch_repo = 400
+update_timeout = 0.0
+
+
 from watchdog.observers import Observer
 from watchdog.events import LoggingEventHandler
 from watchdog.events import FileSystemEventHandler
 
+# global variables
+watch_count = 0
 sockfile = tempfile.gettempdir() + "/gitstatus-" + getpass.getuser()
 
 
-# change this symbol to whatever you prefer
-prehash = ':'
-useWatchdog = False
-maxwatch = 1000
-maxwatch_repo = 400
-watchcount = 0
-updateTimeout = 2
+# print on stderr
+def eprint(*args, **kwargs):
+    print(*args, file=sys.stderr, **kwargs)
 
-def fcount(path, max=-1, accu=0):
+
+def count_dirs(path, max=-1, accu=0):
     accu += 1
     for f in os.listdir(path):
-#        if ".git" == f: continue
         child = os.path.join(path, f)
         if os.path.isdir(child):
-            accu = fcount(child, max, accu)
+            accu = count_dirs(child, max, accu)
         if max > 0 and accu > max:
             return accu
     return accu
-
-def eprint(*args, **kwargs):
-    print(*args, file=sys.stderr, **kwargs)
 
 # from http://stackoverflow.com/a/4825933/1562506
 class Command(object):
@@ -69,7 +73,7 @@ class Command(object):
         return self.process.poll()
 
 
-def gitBase(path):
+def get_git_base_dir(path):
     os.chdir(path)
     gitsym, error = Command(['git', 'rev-parse', '--show-toplevel', '--symbolic-full-name', 'HEAD']).run(0.01)
     gitsym = gitsym.decode('utf8')
@@ -86,8 +90,8 @@ def gitBase(path):
 
 
 
-def parse(path):
-    path, branch = gitBase(path)
+def git_status(path):
+    path, branch = get_git_base_dir(path)
     if(path == None):
         return ""
 
@@ -113,7 +117,7 @@ def parse(path):
     ahead, behind = 0,0
 
     if not branch: # not on any branch
-            branch = prehash + Command(['git','rev-parse','--short','HEAD']).run()[0].decode("utf-8")[:-1]
+            branch = hash_prefix + Command(['git','rev-parse','--short','HEAD']).run()[0].decode("utf-8")[:-1]
     else:
             remote_name = Command(['git','config','branch.%s.remote' % branch]).run()[0].decode("utf-8").strip()
             if remote_name:
@@ -148,33 +152,31 @@ class MyHandler(FileSystemEventHandler):
         self.repo = repo
 
     def on_modified(self, event):
-        #if event.src_path.find("/.git/") >= 0 or event.src_path.endswith("/.git"):
-        #    return
         print("event " + str(event))
         print(event.src_path)
         print("invalidate " + self.repo.path)
-        self.repo.needsUpdate = True
+        self.repo.needs_update = True
 
 class Repo:
     def __init__(self):
         self.path = None
         self.stat = ""
-        self.needsUpdate = True
+        self.needs_update = True
         self.handler = None
 
     def __str__(self):
         return str(self.stat)
 
     def status(self):
-        if self.needsUpdate or (self.handler == None and self.timestamp + updateTimeout < time.time()):
-            self.stat = parse(self.path)
+        if self.needs_update or (self.handler == None and self.timestamp + update_timeout < time.time()):
+            self.stat = git_status(self.path)
             self.timestamp = time.time()
-            self.needsUpdate = False
+            self.needs_update = False
         return self.stat
 
 
 
-def serverIsRunning():
+def server_is_running():
     conn = socket.socket( socket.AF_UNIX, socket.SOCK_STREAM )
     try:
         conn.connect(sockfile)
@@ -188,7 +190,7 @@ class Server:
         self.repos = {}
 
     def start(self):
-        if serverIsRunning():
+        if server_is_running():
             return
 
         self.observer.start()
@@ -204,7 +206,7 @@ class Server:
         def getCommand(send, data):
             path = data[4:]
             eprint(self.repos)
-            stat = self.register(path)
+            stat = self.get_git_status(path)
             if stat == "": stat = "fail"
             send(stat)
         commands["get"] = getCommand
@@ -243,10 +245,9 @@ class Server:
         eprint("stopping server")
 
 
-    def register(self, path):
-        global watchcount
-        eprint("registering " + path)
-        path = gitBase(path)[0]
+    def get_git_status(self, path):
+        global watch_count
+        path = get_git_base_dir(path)[0]
         if path == None or not ".git" in os.listdir(path):
             eprint("only register git repos")
             return ""
@@ -254,18 +255,19 @@ class Server:
         try:
             return self.repos[path].status()
         except KeyError:
+            eprint("registering " + path)
             r = Repo()
             self.repos[path] = r
             r.path = path
 
-            dircount = fcount(path, max=maxwatch_repo)
-            eprint("number of directories: " + str(dircount))
-            if dircount < maxwatch_repo and watchcount + dircount < maxwatch:
+            dir_count = count_dirs(path, max=maxwatch_repo)
+            eprint("number of directories: " + str(dir_count))
+            if dir_count < maxwatch_repo and watch_count + dir_count < maxwatch:
                 eprint("observe file system changes")
                 r.handler = MyHandler(r)
                 try:
                     self.observer.schedule(r.handler, path, recursive=True)
-                    watchcount += dircount
+                    watch_count += dir_count
                 except OSError as e:
                     traceback.print_exc()
                     r.handler = None
@@ -278,9 +280,9 @@ class Server:
 
         return ""
 
-def startServer():
+def start_server():
 # https://code.activestate.com/recipes/278731/
-    if serverIsRunning():
+    if server_is_running():
         return
 
     if (hasattr(os, "devnull")):
@@ -348,12 +350,12 @@ def request(cmd):
     return conn.recv(8196).decode('utf8')
 
 
-def get(path):
+def request_status(path):
     reply = request("get " + path)
 
     if reply == None:
-        startServer()
-        return parse(path)
+        start_server()
+        return git_status(path)
 
     return reply
 
@@ -370,7 +372,7 @@ if __name__ == "__main__":
             sys.exit(0)
 
         if "daemon" == mode:
-            startServer()
+            start_server()
             sys.exit(0)
 
         if "client" == mode:
@@ -384,7 +386,6 @@ if __name__ == "__main__":
     path = os.path.abspath(path)
 
     if "count" == mode:
-        print(fcount(path, max=100))
+        print(count_dirs(path, max=100))
 
-    #print("status " + parse(path), end='')
-    print(get(path), end='')
+    print(request_status(path), end='')
