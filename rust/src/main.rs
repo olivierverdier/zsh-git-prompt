@@ -149,15 +149,14 @@ fn git_status(path : &str) -> Result<GitStatus, Err> {
         if !remote_name.is_empty() {
             let (merge_name, _) = run_command(&format!("git config branch.{}.merge", branch))?;
             let remote_ref = if remote_name == "." {
-                merge_name
+                merge_name.to_string()
             } else {
                 format!("refs/remotes/{}/{}", remote_name, merge_name.get(11..).unwrap_or(""))
             };
 
             let (rev_git, _) = run_command(&format!("git rev-list --left-right {}...HEAD", remote_ref))?;
-            println!("git rev-list --left-right {}...HEAD", remote_ref);
-            println!("{}", rev_git);
             // TODO?: failback to local
+            //let (rev_git, _) = run_command(&format!("git rev-list --left-right {}...HEAD", merge_name))?;
 
             let lines = rev_git.split("\n").collect::<Vec<_>>();
             ahead = count(&lines, 0, ">");
@@ -179,11 +178,6 @@ fn git_status(path : &str) -> Result<GitStatus, Err> {
 
 
 fn main() -> Result<(), Err> {
-    println!("status master 2 0 0 0 0 0");
-
-    println!("{:?}", get_git_base("."));
-    println!("{:?}", git_status("."));
-
     let status = git_status(".")?;
     
     print!("status");
