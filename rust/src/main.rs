@@ -1,4 +1,5 @@
 
+extern crate subprocess;
 use subprocess::PopenError;
 use subprocess::Redirection;
 
