@@ -65,7 +65,7 @@ fn run_command(cmd : &str) -> Result<(String, String), Err> {
     if let Some(status) = p.wait_timeout(Duration::new(1, 0))? {
         let (stdout, stderr) = p.communicate(None)?;
         let (stdout, stderr) = (stdout.unwrap_or("".to_string()), stderr.unwrap_or("".to_string()));
-        let (stdout, stderr) = (stdout.trim(), stderr.trim());
+        let (stdout, stderr) = (stdout.trim_end(), stderr.trim_end());
         return Ok((stdout.to_string(), stderr.to_string()));
     } else {
         p.kill()?;
