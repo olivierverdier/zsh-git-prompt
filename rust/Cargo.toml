@@ -1,0 +1,9 @@
+[package]
+name = "gitstatus"
+version = "0.1.0"
+authors = ["Thomas Rebele <thomas.rebele@googlemail.com>"]
+edition = "2018"
+
+[dependencies]
+subprocess = "0.1.18"
+

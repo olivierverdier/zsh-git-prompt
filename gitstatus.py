@@ -85,7 +85,7 @@ class Command(object):
         return self.process.poll()
 
 
-def get_git_base_dir(path):
+def get_git_base(path):
     os.chdir(path)
     gitsym, error = Command(['git', 'rev-parse', '--show-toplevel', '--symbolic-full-name', 'HEAD']).run(0.01)
     gitsym = gitsym.decode('utf8')
@@ -104,7 +104,7 @@ def get_git_base_dir(path):
 
 def git_status(path):
     eprint("get status of " + path)
-    path, branch = get_git_base_dir(path)
+    path, branch = get_git_base(path)
     if(path == None):
         return ""
 
@@ -253,7 +253,7 @@ class Server:
 
     def get_git_status(self, path):
         global watch_count
-        path = get_git_base_dir(path)[0]
+        path = get_git_base(path)[0]
         if path == None or not ".git" in os.listdir(path):
             eprint("only register git repos")
             return ""
@@ -395,4 +395,4 @@ if __name__ == "__main__":
     if "count" == mode:
         print(count_dirs(path, max=100))
 
-    print(request_status(path), end='')
+    print(request_status(path))
