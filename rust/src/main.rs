@@ -60,7 +60,7 @@ fn run_command(cmd : &str) -> Result<(String, String), Err> {
     
     let mut p = Exec::shell(cmd)
         .stdout(Redirection::Pipe)
-        .stderr(Redirection::Merge)
+        .stderr(Redirection::Pipe)
         .popen()?;
 
     if let Some(status) = p.wait_timeout(Duration::new(1, 0))? {
@@ -80,20 +80,26 @@ fn run_command(cmd : &str) -> Result<(String, String), Err> {
 
 
 fn get_git_base(path : &str) -> Result<GitBase, Err> {
-    let (stdout, stderr) = run_command("git rev-parse --show-toplevel --symbolic-full-name HEAD")?;
+    let (stdout, stderr) = run_command("git rev-parse --show-toplevel --symbolic-full-name HEAD --")?;
 
     if stderr.contains("fatal: Not a git repository") {
         return Err::Git("no git repo".to_string()).into();
     }
 
     let words = stdout.split("\n").collect::<Vec<_>>();
-    if words.len() < 2 {
+    if words.len() < 2 && !stderr.contains("bad revision") {
         return Err::Git("unexpected output".to_string()).into();
     }
 
     let path = words[0];
-    let ref_name = words[1].trim();
-    let branch = &ref_name[11..];
+    let mut branch = 
+        if words.len() < 2 {
+            &"NO_COMMIT"
+        } 
+        else {
+            let ref_name =  words[1].trim();
+            &ref_name[11..]
+        };
 
     let base = GitBase { 
         dir: path.to_string(), 
