@@ -108,7 +108,8 @@ fn git_status(path : &str) -> Result<GitStatus, Err> {
     let base = get_git_base(path)?;
  
     let (gitstatus_stdout, gitstatus_stderr) = run_command("git status --porcelain")?;
-    if gitstatus_stderr.contains("fatal") {
+
+    if gitstatus_stderr.contains("fatal") || gitstatus_stdout.starts_with("fatal: not a git repository") {
         return Err::Git("".to_string()).into()
     }
 
