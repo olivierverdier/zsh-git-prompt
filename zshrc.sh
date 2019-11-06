@@ -53,9 +53,11 @@ function update_current_git_vars() {
         _GIT_STATUS=`${gitstatus} 2> /dev/null | grep "^GIT_"`
     fi
     echo -e "$_GIT_STATUS" | while IFS= read -r line; do
-        var=${line%% *}
-        arg=${line#* }
-        eval $var="$arg"
+        if [[ "$line" ]]; then
+            var=${line%% *}
+            arg=${line#* }
+            eval $var="$arg"
+        fi
     done 
 }
 
