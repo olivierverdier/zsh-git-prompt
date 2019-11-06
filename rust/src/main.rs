@@ -54,6 +54,7 @@ struct GitStatus {
     conflicts: u32,
     changed : u32,
     untracked : u32,
+    remote : String,
 }
 
 fn run_command(cmd : &str) -> Result<(String, String), Err> {
@@ -114,8 +115,7 @@ fn git_status(path : &str) -> Result<GitStatus, Err> {
     let base = get_git_base(path)?;
  
     let (gitstatus_stdout, gitstatus_stderr) = run_command("git status --porcelain")?;
-
-    if gitstatus_stderr.contains("fatal") || gitstatus_stdout.starts_with("fatal: not a git repository") {
+    if gitstatus_stderr.contains("fatal") {
         return Err::Git("".to_string()).into()
     }
 
@@ -143,6 +143,8 @@ fn git_status(path : &str) -> Result<GitStatus, Err> {
     let mut ahead = 0;
     let mut behind = 0;
     let mut branch = base.branch;
+    let mut remote = "".to_string();
+    let mut remote_branch = "".to_string();
 
     if branch.len() == 0 {
         // not on any branch
@@ -152,13 +154,15 @@ fn git_status(path : &str) -> Result<GitStatus, Err> {
     else {
         // check cached remote status
         let (remote_name, _) = run_command(&format!("git config branch.{}.remote", branch))?;
-        let mut remote_name = remote_name;
+        remote = remote_name.to_string();
 
         if !remote_name.is_empty() {
             let (merge_name, _) = run_command(&format!("git config branch.{}.merge", branch))?;
             let remote_ref = if remote_name == "." {
+                remote_branch = merge_name.to_string();
                 merge_name.to_string()
             } else {
+                remote_branch = merge_name.get(11..).unwrap_or("").to_string();
                 format!("refs/remotes/{}/{}", remote_name, merge_name.get(11..).unwrap_or(""))
             };
 
@@ -173,6 +177,10 @@ fn git_status(path : &str) -> Result<GitStatus, Err> {
         }
     }
 
+    if remote_branch != branch {
+        remote = remote.to_string() + "/" + &remote_branch;
+    }
+
     Ok(GitStatus {
         branch,
         ahead,
@@ -181,6 +189,7 @@ fn git_status(path : &str) -> Result<GitStatus, Err> {
         conflicts,
         changed,
         untracked,
+        remote: remote,
     })
 }
 
@@ -196,6 +205,7 @@ fn main() -> Result<(), Err> {
     println!("GIT_CONFLICTS {}", status.conflicts);
     println!("GIT_CHANGED {}", status.changed);
     println!("GIT_UNTRACKED {}", status.untracked);
+    println!("GIT_REMOTE {}", status.remote);
 
     Ok(())
 }
