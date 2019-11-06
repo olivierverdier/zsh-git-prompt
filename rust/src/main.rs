@@ -188,15 +188,14 @@ fn git_status(path : &str) -> Result<GitStatus, Err> {
 fn main() -> Result<(), Err> {
     let status = git_status(".")?;
     
-    print!("status");
-    print!(" {}", status.branch);
-    print!(" {}", status.ahead);
-    print!(" {}", status.behind);
-    print!(" {}", status.staged);
-    print!(" {}", status.conflicts);
-    print!(" {}", status.changed);
-    print!(" {}", status.untracked);
-    println!("");
+    println!("GIT_IS_REPOSITORY yes");
+    println!("GIT_BRANCH {}", status.branch);
+    println!("GIT_AHEAD {}", status.ahead);
+    println!("GIT_BEHIND {}", status.behind);
+    println!("GIT_STAGED {}", status.staged);
+    println!("GIT_CONFLICTS {}", status.conflicts);
+    println!("GIT_CHANGED {}", status.changed);
+    println!("GIT_UNTRACKED {}", status.untracked);
 
     Ok(())
 }

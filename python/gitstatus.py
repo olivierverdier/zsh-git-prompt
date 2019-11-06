@@ -147,16 +147,16 @@ def git_status(path):
                     ahead = len([x for x in behead if x[0]=='>'])
                     behind = len(behead) - ahead
 
-    out = "status " + ' '.join([
-            branch,
-            str(ahead),
-            str(behind),
-            staged,
-            conflicts,
-            changed,
-            untracked,
-            ])
-    return out
+    status  = []
+    status.append("GIT_IS_REPOSITORY yes")
+    status.append("GIT_BRANCH " + str(branch))
+    status.append("GIT_AHEAD " + str(ahead))
+    status.append("GIT_BEHIND " + str(behind))
+    status.append("GIT_STAGED " + str(staged))
+    status.append("GIT_CONFLICTS " + str(conflicts))
+    status.append("GIT_CHANGED " + str(changed))
+    status.append("GIT_UNTRACKED " + str(untracked))
+    return "\n".join(status)
 
 
 
