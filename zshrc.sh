@@ -50,8 +50,9 @@ function update_current_git_vars() {
     fi
     if [[ "$GIT_PROMPT_EXECUTABLE" == "rust" ]]; then
         local gitstatus="$__GIT_PROMPT_DIR/rust/target/release/gitstatus"
-        _GIT_STATUS=`${gitstatus} 2> /dev/null | grep "^GIT_"`
+        _GIT_STATUS=`${gitstatus} 2> /dev/null `
     fi
+
     echo -e "$_GIT_STATUS" | while IFS= read -r line; do
         if [[ "$line" ]]; then
             var=${line%% *}
