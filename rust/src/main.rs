@@ -53,6 +53,7 @@ struct GitStatus {
     staged: u32,
     conflicts: u32,
     changed : u32,
+    deleted : u32,
     untracked : u32,
     remote : String,
 }
@@ -139,6 +140,7 @@ fn git_status(path : &str) -> Result<GitStatus, Err> {
     let conflicts = count(&lines, 0, "UU");
     let changed = count(&lines, 1, "M");
     let untracked = count(&lines, 0, "??");
+    let deleted = count(&lines, 1, "D");
     
     let mut ahead = 0;
     let mut behind = 0;
@@ -188,6 +190,7 @@ fn git_status(path : &str) -> Result<GitStatus, Err> {
         staged,
         conflicts,
         changed,
+        deleted,
         untracked,
         remote: remote,
     })
@@ -204,6 +207,7 @@ fn main() -> Result<(), Err> {
     println!("GIT_STAGED {}", status.staged);
     println!("GIT_CONFLICTS {}", status.conflicts);
     println!("GIT_CHANGED {}", status.changed);
+    println!("GIT_DELETED {}", status.deleted);
     println!("GIT_UNTRACKED {}", status.untracked);
     println!("GIT_REMOTE {}", status.remote);
 
