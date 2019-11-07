@@ -177,7 +177,7 @@ fn git_status(path : &str) -> Result<GitStatus, Err> {
         }
     }
 
-    if remote_branch != branch {
+    if !remote_branch.is_empty() && remote_branch != branch {
         remote = remote.to_string() + "/" + &remote_branch;
     }
 
