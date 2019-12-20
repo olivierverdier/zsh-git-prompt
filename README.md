@@ -65,10 +65,15 @@ When the branch name starts with a colon `:`, it means it’s actually a hash, n
 
     ```sh
     source path/to/zshrc.sh
-    # an example prompt
-    PROMPT='%B%m%~%b$(git_super_status) %# '
+    # an example prompt that shows git status when inside a git repository
+    git_prompt() {
+      if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then echo '%B%m%~%b'$(git_super_status)' %# '
+      else echo '%n@%m %1~ %# '
+      fi
+    }
+    PROMPT='$(git_prompt)'
     ```
-3.  Go in a git repository and test it!
+3.  Go in a git repositoary and test it!
 
 ### Haskell (optional)
 
