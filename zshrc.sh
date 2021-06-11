@@ -6,6 +6,8 @@
 export __GIT_PROMPT_DIR=${0:A:h}
 
 export GIT_PROMPT_EXECUTABLE=${GIT_PROMPT_EXECUTABLE:-"python"}
+export GIT_PROMPT_CACHE_TIME=3600
+export GIT_PROMPT_VALID_UNTIL=$(( `date +%s` + $GIT_PROMPT_CACHE_TIME ))
 
 # Initialize colors.
 autoload -U colors
@@ -30,7 +32,7 @@ function preexec_update_git_vars() {
 }
 
 function precmd_update_git_vars() {
-    if [ -n "$__EXECUTED_GIT_COMMAND" ] || [ ! -n "$ZSH_THEME_GIT_PROMPT_CACHE" ]; then
+    if [ -n "$__EXECUTED_GIT_COMMAND" ] || [ ! -n "$ZSH_THEME_GIT_PROMPT_CACHE" ] || (( $(date +%s) > $GIT_PROMPT_VALID_UNTIL )); then
         update_current_git_vars
         unset __EXECUTED_GIT_COMMAND
     fi
@@ -42,6 +44,7 @@ function chpwd_update_git_vars() {
 
 function update_current_git_vars() {
     unset __CURRENT_GIT_STATUS
+    export GIT_PROMPT_VALID_UNTIL=$(( `date +%s` + $GIT_PROMPT_CACHE_TIME ))
 
     if [[ "$GIT_PROMPT_EXECUTABLE" == "python" ]]; then
         local gitstatus="$__GIT_PROMPT_DIR/gitstatus.py"
