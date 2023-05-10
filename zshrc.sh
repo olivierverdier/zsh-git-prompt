@@ -61,18 +61,20 @@ function update_current_git_vars() {
         local gitstatus="$__GIT_PROMPT_DIR/src/.bin/gitstatus"
         if [[ ! -x $gitstatus ]]; then
           GIT_BRANCH=$(git branch --show-current 2>/dev/null)
-          return
+        else
+          _GIT_STATUS=`git status --porcelain --branch &> /dev/null | ${gitstatus}`
         fi
-        _GIT_STATUS=`git status --porcelain --branch &> /dev/null | ${gitstatus}`
     fi
-     __CURRENT_GIT_STATUS=("${(@s: :)_GIT_STATUS}")
-    GIT_BRANCH=$__CURRENT_GIT_STATUS[1]
-    GIT_AHEAD=$__CURRENT_GIT_STATUS[2]
-    GIT_BEHIND=$__CURRENT_GIT_STATUS[3]
-    GIT_STAGED=$__CURRENT_GIT_STATUS[4]
-    GIT_CONFLICTS=$__CURRENT_GIT_STATUS[5]
-    GIT_CHANGED=$__CURRENT_GIT_STATUS[6]
-    GIT_UNTRACKED=$__CURRENT_GIT_STATUS[7]
+    if [[ -n $_GIT_STATUS ]]; then
+      __CURRENT_GIT_STATUS=("${(@s: :)_GIT_STATUS}")
+      GIT_BRANCH=$__CURRENT_GIT_STATUS[1]
+      GIT_AHEAD=$__CURRENT_GIT_STATUS[2]
+      GIT_BEHIND=$__CURRENT_GIT_STATUS[3]
+      GIT_STAGED=$__CURRENT_GIT_STATUS[4]
+      GIT_CONFLICTS=$__CURRENT_GIT_STATUS[5]
+      GIT_CHANGED=$__CURRENT_GIT_STATUS[6]
+      GIT_UNTRACKED=$__CURRENT_GIT_STATUS[7]
+    fi
 
     STATUS="$ZSH_THEME_GIT_PROMPT_PREFIX$ZSH_THEME_GIT_PROMPT_BRANCH$GIT_BRANCH%{${reset_color}%}"
     if [ -n "$__CURRENT_GIT_STATUS" ]; then
