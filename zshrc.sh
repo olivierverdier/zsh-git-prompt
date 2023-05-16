@@ -5,7 +5,7 @@
 # h: equivalent to dirname
 export __GIT_PROMPT_DIR=${0:A:h}
 
-export GIT_PROMPT_EXECUTABLE=${GIT_PROMPT_EXECUTABLE:-"python"}
+export GIT_PROMPT_EXECUTABLE=${GIT_PROMPT_EXECUTABLE:-""}
 
 # Initialize colors.
 autoload -U colors
@@ -56,15 +56,12 @@ function update_current_git_vars() {
     if [[ "$GIT_PROMPT_EXECUTABLE" == "python" ]]; then
         local gitstatus="$__GIT_PROMPT_DIR/gitstatus.py"
         _GIT_STATUS=`python ${gitstatus} 2>/dev/null`
+    elif [[ -n ${GIT_PROMPT_EXECUTABLE} && -x ${GIT_PROMPT_EXECUTABLE} ]]; then
+        _GIT_STATUS=`git status --porcelain --branch &> /dev/null | ${GIT_PROMPT_EXECUTABLE}`
+    else
+        GIT_BRANCH=$(git branch --show-current 2>/dev/null)
     fi
-    if [[ "$GIT_PROMPT_EXECUTABLE" == "haskell" ]]; then
-        local gitstatus="$__GIT_PROMPT_DIR/src/.bin/gitstatus"
-        if [[ ! -x $gitstatus ]]; then
-          GIT_BRANCH=$(git branch --show-current 2>/dev/null)
-        else
-          _GIT_STATUS=`git status --porcelain --branch &> /dev/null | ${gitstatus}`
-        fi
-    fi
+
     if [[ -n $_GIT_STATUS ]]; then
       __CURRENT_GIT_STATUS=("${(@s: :)_GIT_STATUS}")
       GIT_BRANCH=$__CURRENT_GIT_STATUS[1]
