@@ -52,14 +52,14 @@ else:
 		ahead = len([x for x in behead if x[0]=='>'])
 		behind = len(behead) - ahead
 
-out = ' '.join([
-	branch,
-	str(ahead),
-	str(behind),
-	staged,
-	conflicts,
-	changed,
-	untracked,
-	])
-print(out, end='')
+	out = ' '.join([
+		branch,
+		str(ahead),
+		str(behind),
+		staged,
+		conflicts,
+		changed,
+		untracked,
+		])
+	print(out, end='')
 
